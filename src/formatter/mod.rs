@@ -7,7 +7,6 @@ use crate::{
     syntax::{SyntaxElement, SyntaxKind::*, SyntaxNode, SyntaxToken},
     util::overlaps,
 };
-use itertools::Itertools;
 use rowan::{NodeOrToken, TextRange};
 use std::cell::OnceCell;
 use std::{cmp, collections::VecDeque, ops::Range, rc::Rc};
@@ -744,11 +743,9 @@ fn format_inline_table(
     }
 
     let mut sorted_children = if options.reorder_inline_tables {
-        Some(
-            node.children()
-                .sorted_unstable_by(|x, y| x.to_string().cmp(&y.to_string()))
-                .collect::<VecDeque<_>>(),
-        )
+        let mut children: Vec<_> = node.children().collect();
+        children.sort_unstable_by(|x, y| x.to_string().cmp(&y.to_string()));
+        Some(VecDeque::from(children))
     } else {
         None
     };
