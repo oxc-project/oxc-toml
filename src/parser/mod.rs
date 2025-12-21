@@ -83,10 +83,7 @@ impl Parser<'_> {
         self.key_pattern_syntax = true;
         let _ = with_node!(self.builder, KEY, self.parse_key());
 
-        Parse {
-            green_node: self.builder.finish(),
-            errors: self.errors,
-        }
+        Parse { green_node: self.builder.finish(), errors: self.errors }
     }
 }
 
@@ -114,10 +111,7 @@ impl<'p> Parser<'p> {
     fn parse(mut self) -> Parse {
         let _ = with_node!(self.builder, ROOT, self.parse_root());
 
-        Parse {
-            green_node: self.builder.finish(),
-            errors: self.errors,
-        }
+        Parse { green_node: self.builder.finish(), errors: self.errors }
     }
 
     fn error(&mut self, message: &str) -> ParserResult<()> {
@@ -131,11 +125,7 @@ impl<'p> Parser<'p> {
             message: message.into(),
         };
 
-        let same_error = self
-            .errors
-            .last()
-            .map(|e| e.range == err.range)
-            .unwrap_or(false);
+        let same_error = self.errors.last().map(|e| e.range == err.range).unwrap_or(false);
 
         if !same_error {
             self.add_error(&Error {

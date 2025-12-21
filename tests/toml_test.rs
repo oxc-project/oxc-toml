@@ -110,10 +110,7 @@ fn test_valid_idempotent() {
         }
     }
 
-    assert!(
-        failures.is_empty(),
-        "Formatter is not idempotent for:\n{failures:#?}"
-    );
+    assert!(failures.is_empty(), "Formatter is not idempotent for:\n{failures:#?}");
 }
 
 #[test]
@@ -137,8 +134,5 @@ fn test_invalid_parse_failure() {
         }
     }
 
-    assert!(
-        failures.is_empty(),
-        "Expected parse errors for:\n{failures:#?}"
-    );
+    assert!(failures.is_empty(), "Expected parse errors for:\n{failures:#?}");
 }

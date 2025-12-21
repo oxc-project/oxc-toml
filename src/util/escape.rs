@@ -106,9 +106,5 @@ pub fn check_escape(s: &str) -> Result<(), Vec<usize>> {
         }
     }
 
-    if invalid.is_empty() {
-        Ok(())
-    } else {
-        Err(invalid)
-    }
+    if invalid.is_empty() { Ok(()) } else { Err(invalid) }
 }

@@ -153,10 +153,7 @@ impl Options {
     }
 
     fn newlines(&self, count: usize) -> impl Iterator<Item = &'static str> {
-        std::iter::repeat_n(
-            self.newline(),
-            usize::min(count, self.allowed_blank_lines + 1),
-        )
+        std::iter::repeat_n(self.newline(), usize::min(count, self.allowed_blank_lines + 1))
     }
 
     fn should_align_comments(&self, comment_count: usize) -> bool {
@@ -207,10 +204,8 @@ impl Context {
 pub fn format(src: &str, options: Options) -> String {
     let p = crate::parser::parse(src);
 
-    let ctx = Context {
-        errors: p.errors.iter().map(|err| err.range).collect(),
-        ..Context::default()
-    };
+    let ctx =
+        Context { errors: p.errors.iter().map(|err| err.range).collect(), ..Context::default() };
 
     format_impl(p.into_syntax(), options, ctx)
 }
@@ -245,11 +240,7 @@ struct FormattedEntry {
 impl FormattedEntry {
     fn cleaned_key(&self) -> &Vec<String> {
         self.cleaned_key.get_or_init(|| {
-            self.key
-                .replace(['\'', '"'], "")
-                .split('.')
-                .map(ToOwned::to_owned)
-                .collect()
+            self.key.replace(['\'', '"'], "").split('.').map(ToOwned::to_owned).collect()
         })
     }
 }
@@ -404,12 +395,7 @@ fn format_root(node: SyntaxNode, options: &Options, context: &Context) -> String
                     scoped_options = options.clone();
                     context.update_options(&mut scoped_options, c_range);
 
-                    if add_comments(
-                        &mut comment_group,
-                        &mut formatted,
-                        &context,
-                        &scoped_options,
-                    ) {
+                    if add_comments(&mut comment_group, &mut formatted, &context, &scoped_options) {
                         formatted += scoped_options.newline();
                         skip_newlines = 0;
                     }
@@ -435,12 +421,7 @@ fn format_root(node: SyntaxNode, options: &Options, context: &Context) -> String
                     }
 
                     if newline_count > 1 {
-                        add_comments(
-                            &mut comment_group,
-                            &mut formatted,
-                            &context,
-                            &scoped_options,
-                        );
+                        add_comments(&mut comment_group, &mut formatted, &context, &scoped_options);
                         add_entries(&mut entry_group, &mut formatted, &scoped_options, &context);
                         skip_newlines = 0;
                     }
@@ -463,12 +444,7 @@ fn format_root(node: SyntaxNode, options: &Options, context: &Context) -> String
         }
     }
 
-    add_comments(
-        &mut comment_group,
-        &mut formatted,
-        &context,
-        &scoped_options,
-    );
+    add_comments(&mut comment_group, &mut formatted, &context, &scoped_options);
     add_entries(&mut entry_group, &mut formatted, &scoped_options, &context);
 
     formatted
@@ -601,11 +577,7 @@ fn add_entries(
         } else {
             0..usize::MAX
         },
-        if options.compact_entries {
-            3..usize::MAX
-        } else {
-            1..usize::MAX
-        },
+        if options.compact_entries { 3..usize::MAX } else { 1..usize::MAX },
         &rows,
         options.newline(),
         " ",
@@ -647,13 +619,7 @@ fn format_entry(node: SyntaxNode, options: &Options, context: &Context) -> Forma
         }
     }
 
-    FormattedEntry {
-        syntax: node.into(),
-        key,
-        cleaned_key: OnceCell::new(),
-        value,
-        comment,
-    }
+    FormattedEntry { syntax: node.into(), key, cleaned_key: OnceCell::new(), value, comment }
 }
 
 fn format_key(node: SyntaxNode, formatted: &mut String, _options: &Options, _context: &Context) {
@@ -759,10 +725,7 @@ fn format_inline_table(
                 }
 
                 let child = if options.reorder_inline_tables {
-                    sorted_children
-                        .as_mut()
-                        .and_then(|children| children.pop_front())
-                        .unwrap_or(n)
+                    sorted_children.as_mut().and_then(|children| children.pop_front()).unwrap_or(n)
                 } else {
                     n
                 };
@@ -941,12 +904,7 @@ fn format_array(node: SyntaxNode, options: &Options, context: &Context) -> impl 
                     }
                 }
                 BRACKET_END => {
-                    add_values(
-                        &mut value_group,
-                        &mut commas_group,
-                        &mut formatted,
-                        &inner_context,
-                    );
+                    add_values(&mut value_group, &mut commas_group, &mut formatted, &inner_context);
 
                     if multiline {
                         if !formatted.ends_with('\n') {
@@ -1109,10 +1067,7 @@ where
     let mut out = String::new();
 
     // We currently don't support vertical alignment of complex data.
-    let can_align = rows
-        .iter()
-        .flat_map(|r| r.as_ref().iter())
-        .all(|s| !s.as_ref().contains('\n'));
+    let can_align = rows.iter().flat_map(|r| r.as_ref().iter()).all(|s| !s.as_ref().contains('\n'));
 
     let diff_widths = |range: Range<usize>, row: &R| -> usize {
         let mut max_width = 0_usize;
@@ -1125,17 +1080,12 @@ where
 
             max_width = cmp::max(
                 max_width,
-                row.as_ref()[range]
-                    .iter()
-                    .map(|s| s.as_ref().chars().count())
-                    .sum(),
+                row.as_ref()[range].iter().map(|s| s.as_ref().chars().count()).sum(),
             );
         }
 
-        let row_width = row.as_ref()[range]
-            .iter()
-            .map(|s| s.as_ref().chars().count())
-            .sum::<usize>();
+        let row_width =
+            row.as_ref()[range].iter().map(|s| s.as_ref().chars().count()).sum::<usize>();
 
         max_width - row_width
     };
