@@ -52,3 +52,11 @@ If you need these features, please use the original [Taplo project](https://gith
 ### License
 
 This project maintains the original MIT License from Taplo. See [LICENSE](LICENSE) for details.
+
+## ❤ Who's [Sponsoring Oxc](https://github.com/sponsors/Boshen)?
+
+<p align="center">
+  <a href="https://github.com/sponsors/Boshen">
+    <img src="https://raw.githubusercontent.com/Boshen/sponsors/main/sponsors.svg" alt="My sponsors" />
+  </a>
+</p>
