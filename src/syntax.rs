@@ -1,6 +1,6 @@
 //! Declaration of the syntax tokens and lexer implementation.
 
-#![allow(non_camel_case_types)]
+#![allow(non_camel_case_types, clippy::upper_case_acronyms)]
 
 use logos::{Lexer, Logos};
 

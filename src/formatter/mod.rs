@@ -8,7 +8,7 @@ use crate::{
     util::overlaps,
 };
 use itertools::Itertools;
-use rowan::{GreenNode, NodeOrToken, TextRange};
+use rowan::{NodeOrToken, TextRange};
 use std::cell::OnceCell;
 use std::{cmp, collections::VecDeque, ops::Range, rc::Rc};
 
@@ -121,34 +121,6 @@ pub struct Options {
     pub crlf: bool,
 }
 
-#[derive(Debug)]
-pub enum OptionParseError {
-    InvalidOption(String),
-    InvalidValue {
-        key: String,
-        error: Box<dyn std::error::Error + Send + Sync>,
-    },
-}
-
-impl core::fmt::Display for OptionParseError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "invalid formatting option: {}",
-            match self {
-                OptionParseError::InvalidOption(k) => {
-                    format!(r#"invalid option "{}""#, k)
-                }
-                OptionParseError::InvalidValue { key, error } => {
-                    format!(r#"invalid value for option "{}": {}"#, key, error)
-                }
-            }
-        )
-    }
-}
-
-impl std::error::Error for OptionParseError {}
-
 impl Default for Options {
     fn default() -> Self {
         Options {
@@ -232,11 +204,6 @@ impl Context {
     }
 }
 
-/// Formats a parsed TOML green tree.
-pub fn format_green(green: GreenNode, options: Options) -> String {
-    format_syntax(SyntaxNode::new_root(green), options)
-}
-
 /// Parses then formats a TOML document, skipping ranges that contain syntax errors.
 pub fn format(src: &str, options: Options) -> String {
     let p = crate::parser::parse(src);
@@ -247,19 +214,6 @@ pub fn format(src: &str, options: Options) -> String {
     };
 
     format_impl(p.into_syntax(), options, ctx)
-}
-
-/// Formats a parsed TOML syntax tree.
-pub fn format_syntax(node: SyntaxNode, options: Options) -> String {
-    let mut s = format_impl(node, options.clone(), Context::default());
-
-    s = s.trim_end().into();
-
-    if options.trailing_newline {
-        s += options.newline();
-    }
-
-    s
 }
 
 fn format_impl(node: SyntaxNode, options: Options, context: Context) -> String {
