@@ -74,7 +74,7 @@ pub fn escape(s: &str) -> String {
     escaped
 }
 
-/// Unescape all supported sequences found in [Escape](Escape).
+/// Unescape all supported escape sequences.
 ///
 /// If it fails, the index of failure is returned.
 pub fn unescape(s: &str) -> Result<String, usize> {
