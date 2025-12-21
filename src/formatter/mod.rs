@@ -8,14 +8,9 @@ use crate::{
     util::overlaps,
 };
 use itertools::Itertools;
-use std::cell::OnceCell;
 use rowan::{GreenNode, NodeOrToken, TextRange};
-use std::{
-    cmp,
-    collections::VecDeque,
-    ops::Range,
-    rc::Rc,
-};
+use std::cell::OnceCell;
+use std::{cmp, collections::VecDeque, ops::Range, rc::Rc};
 
 #[macro_use]
 mod macros;
@@ -188,15 +183,14 @@ impl Default for Options {
 
 impl Options {
     fn newline(&self) -> &'static str {
-        if self.crlf {
-            "\r\n"
-        } else {
-            "\n"
-        }
+        if self.crlf { "\r\n" } else { "\n" }
     }
 
     fn newlines(&self, count: usize) -> impl Iterator<Item = &'static str> {
-        std::iter::repeat_n(self.newline(), usize::min(count, self.allowed_blank_lines + 1))
+        std::iter::repeat_n(
+            self.newline(),
+            usize::min(count, self.allowed_blank_lines + 1),
+        )
     }
 
     fn should_align_comments(&self, comment_count: usize) -> bool {
@@ -1249,9 +1243,11 @@ fn dangling_newlines(t: SyntaxToken) -> Option<usize> {
 
     if let Some(nt) = t.next_sibling_or_token()
         && let Some(nnt) = nt.next_sibling_or_token()
-            && nt.kind() == WHITESPACE && nnt.kind() == NEWLINE {
-                return Some(newline_count);
-            }
+        && nt.kind() == WHITESPACE
+        && nnt.kind() == NEWLINE
+    {
+        return Some(newline_count);
+    }
 
     None
 }

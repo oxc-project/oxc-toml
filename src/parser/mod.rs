@@ -146,9 +146,10 @@ impl<'p> Parser<'p> {
                 message: message.into(),
             });
             if let Some(t) = self.current_token
-                && !self.whitelisted(t) {
-                    self.token_as(ERROR).ok();
-                }
+                && !self.whitelisted(t)
+            {
+                self.token_as(ERROR).ok();
+            }
         } else {
             self.token_as(ERROR).ok();
         }
@@ -171,9 +172,10 @@ impl<'p> Parser<'p> {
 
     fn add_error(&mut self, e: &Error) {
         if let Some(last_err) = self.errors.last_mut()
-            && last_err == e {
-                return;
-            }
+            && last_err == e
+        {
+            return;
+        }
 
         self.errors.push(e.clone());
     }
