@@ -12,9 +12,6 @@ use rowan::{GreenNode, NodeOrToken, TextRange};
 use std::cell::OnceCell;
 use std::{cmp, collections::VecDeque, ops::Range, rc::Rc};
 
-#[macro_use]
-mod macros;
-
 /// Simplified Keys struct for tracking table paths (used for indentation)
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Keys {
@@ -43,88 +40,86 @@ impl Keys {
     }
 }
 
-create_options!(
-    /// All the formatting options.
-    #[derive(Debug, Clone, Eq, PartialEq)]
-    pub struct Options {
-        /// Align entries vertically.
-        ///
-        /// Entries that have table headers, comments,
-        /// or blank lines between them are not aligned.
-        pub align_entries: bool,
+/// All the formatting options.
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct Options {
+    /// Align entries vertically.
+    ///
+    /// Entries that have table headers, comments,
+    /// or blank lines between them are not aligned.
+    pub align_entries: bool,
 
-        /// Align consecutive comments after entries and items vertically.
-        ///
-        /// This applies to comments that are after entries or array items.
-        pub align_comments: bool,
+    /// Align consecutive comments after entries and items vertically.
+    ///
+    /// This applies to comments that are after entries or array items.
+    pub align_comments: bool,
 
-        /// If `align_comments` is true, apply the alignment in cases where
-        /// there's only one comment.
-        pub align_single_comments: bool,
+    /// If `align_comments` is true, apply the alignment in cases where
+    /// there's only one comment.
+    pub align_single_comments: bool,
 
-        /// Put trailing commas for multiline
-        /// arrays.
-        pub array_trailing_comma: bool,
+    /// Put trailing commas for multiline
+    /// arrays.
+    pub array_trailing_comma: bool,
 
-        /// Automatically expand arrays to multiple lines once they
-        /// exceed the configured `column_width`.
-        pub array_auto_expand: bool,
+    /// Automatically expand arrays to multiple lines once they
+    /// exceed the configured `column_width`.
+    pub array_auto_expand: bool,
 
-        /// Expand values (e.g.) inside inline tables
-        /// where possible.
-        pub inline_table_expand: bool,
+    /// Expand values (e.g.) inside inline tables
+    /// where possible.
+    pub inline_table_expand: bool,
 
-        /// Automatically collapse arrays if they
-        /// fit in one line.
-        ///
-        /// The array won't be collapsed if it
-        /// contains a comment.
-        pub array_auto_collapse: bool,
+    /// Automatically collapse arrays if they
+    /// fit in one line.
+    ///
+    /// The array won't be collapsed if it
+    /// contains a comment.
+    pub array_auto_collapse: bool,
 
-        /// Omit whitespace padding inside single-line arrays.
-        pub compact_arrays: bool,
+    /// Omit whitespace padding inside single-line arrays.
+    pub compact_arrays: bool,
 
-        /// Omit whitespace padding inside inline tables.
-        pub compact_inline_tables: bool,
+    /// Omit whitespace padding inside inline tables.
+    pub compact_inline_tables: bool,
 
-        /// Omit whitespace around `=`.
-        pub compact_entries: bool,
+    /// Omit whitespace around `=`.
+    pub compact_entries: bool,
 
-        /// Target maximum column width after which
-        /// arrays are expanded into new lines.
-        ///
-        /// This is best-effort and might not be accurate.
-        pub column_width: usize,
+    /// Target maximum column width after which
+    /// arrays are expanded into new lines.
+    ///
+    /// This is best-effort and might not be accurate.
+    pub column_width: usize,
 
-        /// Indent subtables if they come in order.
-        pub indent_tables: bool,
+    /// Indent subtables if they come in order.
+    pub indent_tables: bool,
 
-        /// Indent entries under tables.
-        pub indent_entries: bool,
+    /// Indent entries under tables.
+    pub indent_entries: bool,
 
-        /// Indentation to use, should be tabs or spaces
-        /// but technically could be anything.
-        pub indent_string: String,
+    /// Indentation to use, should be tabs or spaces
+    /// but technically could be anything.
+    pub indent_string: String,
 
-        /// Add trailing newline to the source.
-        pub trailing_newline: bool,
+    /// Add trailing newline to the source.
+    pub trailing_newline: bool,
 
-        /// Alphabetically reorder keys that are not separated by blank lines.
-        pub reorder_keys: bool,
+    /// Alphabetically reorder keys that are not separated by blank lines.
+    pub reorder_keys: bool,
 
-        /// Alphabetically reorder array values that are not separated by blank lines.
-        pub reorder_arrays: bool,
+    /// Alphabetically reorder array values that are not separated by blank lines.
+    pub reorder_arrays: bool,
 
-        /// Alphabetically reorder inline table values.
-        pub reorder_inline_tables: bool,
+    /// Alphabetically reorder inline table values.
+    pub reorder_inline_tables: bool,
 
-        /// The maximum amount of consecutive blank lines allowed.
-        pub allowed_blank_lines: usize,
+    /// The maximum amount of consecutive blank lines allowed.
+    pub allowed_blank_lines: usize,
 
-        /// Use CRLF line endings
-        pub crlf: bool,
-    }
-);
+    /// Use CRLF line endings
+    pub crlf: bool,
+}
 
 #[derive(Debug)]
 pub enum OptionParseError {
