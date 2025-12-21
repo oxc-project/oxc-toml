@@ -15,10 +15,9 @@ repository   = "https://github.com/oxc-project/oxc-toml"
 test = false
 
 [dependencies]
-rustc-hash = "2.1.0"
-itertools  = "0.14.0"
-logos      = "0.16.0"
-rowan      = "0.16.1"
+itertools = "0.14.0"
+logos     = "0.16.0"
+rowan     = "0.16.1"
 
 [dev-dependencies]
 walkdir = "2"
