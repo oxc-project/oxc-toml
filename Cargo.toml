@@ -1,0 +1,18 @@
+[package]
+name         = "oxc-toml"
+description  = "A TOML formatter library"
+version      = "0.14.1"
+categories   = ["parser-implementations", "parsing"]
+keywords     = ["toml", "formatter"]
+readme       = "README.md"
+authors      = ["Boshen"]
+edition      = "2024"
+license      = "MIT"
+homepage     = "https://github.com/oxc-project/oxc-toml"
+repository   = "https://github.com/oxc-project/oxc-toml"
+
+[dependencies]
+rustc-hash = "2.1.0"
+itertools  = "0.14.0"
+logos      = "0.16.0"
+rowan      = "0.16.1"
