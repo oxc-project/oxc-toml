@@ -1,8 +1,7 @@
 use std::fs;
 use std::path::Path;
 
-use oxc_toml::formatter::{format, Options};
-use oxc_toml::parser::parse;
+use oxc_toml::{Options, format, parse};
 use walkdir::WalkDir;
 
 const TOML_TEST_DIR: &str = "toml-test/tests";
@@ -111,7 +110,10 @@ fn test_valid_idempotent() {
         }
     }
 
-    assert!(failures.is_empty(), "Formatter is not idempotent for:\n{failures:#?}");
+    assert!(
+        failures.is_empty(),
+        "Formatter is not idempotent for:\n{failures:#?}"
+    );
 }
 
 #[test]
@@ -135,5 +137,8 @@ fn test_invalid_parse_failure() {
         }
     }
 
-    assert!(failures.is_empty(), "Expected parse errors for:\n{failures:#?}");
+    assert!(
+        failures.is_empty(),
+        "Expected parse errors for:\n{failures:#?}"
+    );
 }

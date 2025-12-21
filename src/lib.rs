@@ -12,16 +12,17 @@
 //! A TOML document can be formatted directly using the [formatter::format] function:
 //!
 //! ```
-//! use oxc_toml::formatter::{format, Options};
+//! use oxc_toml::{format, Options};
 //!
 //! const SOURCE: &str = "value=1\n[table]\nstring='some string'";
 //!
 //! let formatted = format(SOURCE, Options::default());
 //! ```
 
-pub mod formatter;
-pub mod parser;
-pub mod syntax;
-pub mod util;
+mod formatter;
+mod parser;
+mod syntax;
+mod util;
 
-pub use rowan;
+pub use formatter::{Options, format};
+pub use parser::parse;

@@ -1,4 +1,4 @@
-use oxc_toml::formatter::{Options, format};
+use oxc_toml::{Options, format};
 
 #[test]
 fn test_basic_formatting() {
