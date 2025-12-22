@@ -424,8 +424,13 @@ fn try_lex_number(input: &str) -> Option<(SyntaxKind, usize)> {
         if i < bytes.len() && (bytes[i] == b'+' || bytes[i] == b'-') {
             i += 1;
         }
+        let exp_start = i;
         while i < bytes.len() && (bytes[i].is_ascii_digit() || bytes[i] == b'_') {
             i += 1;
+        }
+        // Must have at least one digit in exponent
+        if i == exp_start {
+            return None;
         }
     }
 
@@ -479,22 +484,54 @@ fn try_match_date(input: &str) -> Option<usize> {
         return None;
     }
 
-    // YYYY-MM-DD
-    if bytes[0].is_ascii_digit()
-        && bytes[1].is_ascii_digit()
-        && bytes[2].is_ascii_digit()
-        && bytes[3].is_ascii_digit()
-        && bytes[4] == b'-'
-        && bytes[5].is_ascii_digit()
-        && bytes[6].is_ascii_digit()
-        && bytes[7] == b'-'
-        && bytes[8].is_ascii_digit()
-        && bytes[9].is_ascii_digit()
+    // YYYY-MM-DD with validation
+    if !bytes[0].is_ascii_digit()
+        || !bytes[1].is_ascii_digit()
+        || !bytes[2].is_ascii_digit()
+        || !bytes[3].is_ascii_digit()
+        || bytes[4] != b'-'
+        || !bytes[5].is_ascii_digit()
+        || !bytes[6].is_ascii_digit()
+        || bytes[7] != b'-'
+        || !bytes[8].is_ascii_digit()
+        || !bytes[9].is_ascii_digit()
     {
-        Some(10)
-    } else {
-        None
+        return None;
     }
+
+    // Parse year, month, day
+    let year = (bytes[0] - b'0') as u32 * 1000
+        + (bytes[1] - b'0') as u32 * 100
+        + (bytes[2] - b'0') as u32 * 10
+        + (bytes[3] - b'0') as u32;
+    let month = (bytes[5] - b'0') as u32 * 10 + (bytes[6] - b'0') as u32;
+    let day = (bytes[8] - b'0') as u32 * 10 + (bytes[9] - b'0') as u32;
+
+    // Validate month (01-12)
+    if !(1..=12).contains(&month) {
+        return None;
+    }
+
+    // Validate day based on month
+    let max_day = match month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 => {
+            // Check for leap year
+            if (year.is_multiple_of(4) && !year.is_multiple_of(100)) || year.is_multiple_of(400) {
+                29
+            } else {
+                28
+            }
+        }
+        _ => return None,
+    };
+
+    if day < 1 || day > max_day {
+        return None;
+    }
+
+    Some(10)
 }
 
 fn try_match_time(input: &str) -> Option<usize> {
@@ -503,28 +540,42 @@ fn try_match_time(input: &str) -> Option<usize> {
         return None;
     }
 
-    // HH:MM:SS
-    if bytes[0].is_ascii_digit()
-        && bytes[1].is_ascii_digit()
-        && bytes[2] == b':'
-        && bytes[3].is_ascii_digit()
-        && bytes[4].is_ascii_digit()
-        && bytes[5] == b':'
-        && bytes[6].is_ascii_digit()
-        && bytes[7].is_ascii_digit()
+    // HH:MM:SS with validation
+    if !bytes[0].is_ascii_digit()
+        || !bytes[1].is_ascii_digit()
+        || bytes[2] != b':'
+        || !bytes[3].is_ascii_digit()
+        || !bytes[4].is_ascii_digit()
+        || bytes[5] != b':'
+        || !bytes[6].is_ascii_digit()
+        || !bytes[7].is_ascii_digit()
     {
-        let mut len = 8;
-        // Optional fractional seconds
-        if len < bytes.len() && (bytes[len] == b'.' || bytes[len] == b',') {
-            len += 1;
-            while len < bytes.len() && bytes[len].is_ascii_digit() {
-                len += 1;
-            }
-        }
-        Some(len)
-    } else {
-        None
+        return None;
     }
+
+    let hour = (bytes[0] - b'0') as u32 * 10 + (bytes[1] - b'0') as u32;
+    let minute = (bytes[3] - b'0') as u32 * 10 + (bytes[4] - b'0') as u32;
+    let second = (bytes[6] - b'0') as u32 * 10 + (bytes[7] - b'0') as u32;
+
+    // Validate ranges: hour 00-23, minute 00-59, second 00-59
+    if hour > 23 || minute > 59 || second > 59 {
+        return None;
+    }
+
+    let mut len = 8;
+    // Optional fractional seconds
+    if len < bytes.len() && (bytes[len] == b'.' || bytes[len] == b',') {
+        let frac_start = len + 1;
+        len += 1;
+        while len < bytes.len() && bytes[len].is_ascii_digit() {
+            len += 1;
+        }
+        // Must have at least one digit after the decimal point
+        if len == frac_start {
+            return None;
+        }
+    }
+    Some(len)
 }
 
 fn try_match_timezone(input: &str) -> Option<usize> {
@@ -533,16 +584,24 @@ fn try_match_timezone(input: &str) -> Option<usize> {
         return None;
     }
 
-    // +HH:MM or -HH:MM
-    if (bytes[0] == b'+' || bytes[0] == b'-')
-        && bytes[1].is_ascii_digit()
-        && bytes[2].is_ascii_digit()
-        && bytes[3] == b':'
-        && bytes[4].is_ascii_digit()
-        && bytes[5].is_ascii_digit()
+    // +HH:MM or -HH:MM with validation
+    if !(bytes[0] == b'+' || bytes[0] == b'-')
+        || !bytes[1].is_ascii_digit()
+        || !bytes[2].is_ascii_digit()
+        || bytes[3] != b':'
+        || !bytes[4].is_ascii_digit()
+        || !bytes[5].is_ascii_digit()
     {
-        Some(6)
-    } else {
-        None
+        return None;
     }
+
+    let hour = (bytes[1] - b'0') as u32 * 10 + (bytes[2] - b'0') as u32;
+    let minute = (bytes[4] - b'0') as u32 * 10 + (bytes[5] - b'0') as u32;
+
+    // Validate timezone offset: hour 00-23, minute 00-59
+    if hour > 23 || minute > 59 {
+        return None;
+    }
+
+    Some(6)
 }
