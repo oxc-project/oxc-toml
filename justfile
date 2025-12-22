@@ -7,6 +7,7 @@ _default:
   @just --list -u
 
 alias r := ready
+alias clone := clone-test-data
 
 init:
   cargo binstall watchexec-cli cargo-insta typos-cli cargo-shear dprint -y

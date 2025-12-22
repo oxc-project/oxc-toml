@@ -84,6 +84,11 @@ fn should_skip(path: &Path, skip_list: &[&str]) -> bool {
 
 fn toml_files(dir: &str) -> impl Iterator<Item = walkdir::DirEntry> {
     let path = Path::new(TOML_TEST_DIR).join(dir);
+    assert!(
+        path.exists(),
+        "toml-test directory not found at {}. Please run: git submodule update --init",
+        path.display()
+    );
     WalkDir::new(path)
         .into_iter()
         .filter_map(Result::ok)
