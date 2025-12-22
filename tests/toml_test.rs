@@ -6,16 +6,14 @@ use walkdir::WalkDir;
 
 const TOML_TEST_DIR: &str = "toml-test/tests";
 
-/// Files that fail idempotent formatting (TOML 1.1.0 features not fully supported)
+/// Files that fail idempotent formatting
 const SKIP_VALID: &[&str] = &[
     "inline-table/newline-comment.toml",
-    "float/inf-and-nan.toml", // Comment placement not stable when followed by multiple entries
-    "array/array.toml", // Formatter bug: missing newlines between entries with multiline values
-    "inline-table/newline.toml", // Formatter bug: missing newlines in inline table formatting
-    "spec-1.1.0/common-47.toml", // Formatter bug: missing newlines between complex entries
+    "float/inf-and-nan.toml", // Comment placement not stable
 ];
 
 /// Files with semantic errors that the parser doesn't detect (parser only does syntactic validation)
+/// OR files that are invalid in TOML 1.0 but valid in TOML 1.1.0
 const SKIP_INVALID: &[&str] = &[
     "array/extend-defined-aot.toml",
     "array/extending-table.toml",
@@ -37,6 +35,13 @@ const SKIP_INVALID: &[&str] = &[
     "inline-table/overwrite-08.toml",
     "inline-table/overwrite-09.toml",
     "inline-table/overwrite-10.toml",
+    // TOML 1.1.0 allows these features that were invalid in 1.0
+    "inline-table/empty-03.toml",        // Empty inline tables with newlines
+    "inline-table/linebreak-01.toml",    // Newlines in inline tables
+    "inline-table/linebreak-02.toml",    // Newlines in inline tables
+    "inline-table/linebreak-03.toml",    // Newlines in inline tables
+    "inline-table/linebreak-04.toml",    // Newlines in inline tables
+    "inline-table/trailing-comma.toml",  // Trailing commas in inline tables
     "key/dotted-redefine-table-01.toml",
     "key/dotted-redefine-table-02.toml",
     "key/duplicate-keys-01.toml",

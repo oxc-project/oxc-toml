@@ -567,18 +567,7 @@ impl<'p> Parser<'p> {
         match t {
             BOOL | DATE_TIME_OFFSET | DATE_TIME_LOCAL | DATE | TIME => self.token(),
             INTEGER => {
-                // This is probably a logos bug or a priority issue,
-                // for some reason "1979-05-27" gets lexed as INTEGER.
-                if !self.lexer.slice().starts_with('-') && self.lexer.slice().contains('-') {
-                    return self.token_as(DATE);
-                }
-
-                // FIXME: probably another logos bug.
-                if self.lexer.slice().contains(':') {
-                    return self.token_as(TIME);
-                }
-
-                // This could've been done more elegantly probably.
+                // Check for zero-padded integers
                 if (self.lexer.slice().starts_with('0') && self.lexer.slice() != "0")
                     || (self.lexer.slice().starts_with("+0") && self.lexer.slice() != "+0")
                     || (self.lexer.slice().starts_with("-0") && self.lexer.slice() != "-0")
@@ -612,11 +601,6 @@ impl<'p> Parser<'p> {
                 }
             }
             FLOAT => {
-                // FIXME: probably another logos bug.
-                if self.lexer.slice().contains(':') {
-                    return self.token_as(TIME);
-                }
-
                 let int_slice = if self.lexer.slice().contains('.') {
                     self.lexer.slice().split('.').next().unwrap()
                 } else {
@@ -770,22 +754,16 @@ impl<'p> Parser<'p> {
 
             match t {
                 BRACE_END => {
-                    if comma_last {
-                        // it is still reported as a syntax error,
-                        // but we can still analyze it as if it was a valid
-                        // table.
-                        let _ = self.report_error("expected value, trailing comma is not allowed");
-                    }
+                    // TOML 1.1.0 allows trailing commas in inline tables
                     break self.add_token()?;
                 }
                 NEWLINE => {
-                    // To avoid infinite loop in case
-                    // new lines are whitelisted.
+                    // TOML 1.1.0 allows newlines in inline tables
+                    // To avoid infinite loop in case new lines are whitelisted
                     if was_newline {
                         break;
                     }
-
-                    let _ = self.error("newline is not allowed in an inline table");
+                    self.token()?;
                     was_newline = true;
                 }
                 COMMA => {
@@ -802,8 +780,9 @@ impl<'p> Parser<'p> {
                     was_newline = false;
                 }
                 _ => {
-                    was_newline = false;
-                    if !comma_last && !first {
+                    // In TOML 1.1.0, entries can be separated by commas OR newlines
+                    // Only require comma if there was no newline before this entry
+                    if !comma_last && !first && !was_newline {
                         let _ = self.error(r#"expected ",""#);
                     }
                     let _ = whitelisted!(
@@ -812,6 +791,7 @@ impl<'p> Parser<'p> {
                         with_node!(self.builder, ENTRY, self.parse_entry())
                     );
                     comma_last = false;
+                    was_newline = false;
                 }
             }
 

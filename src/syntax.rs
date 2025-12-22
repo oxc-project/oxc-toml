@@ -538,8 +538,8 @@ fn try_match_time(input: &str) -> Option<usize> {
     }
 
     let mut len = 8;
-    // Optional fractional seconds
-    if len < bytes.len() && (bytes[len] == b'.' || bytes[len] == b',') {
+    // Optional fractional seconds (TOML 1.1.0 only allows '.' not ',')
+    if len < bytes.len() && bytes[len] == b'.' {
         let frac_start = len + 1;
         len += 1;
         while len < bytes.len() && bytes[len].is_ascii_digit() {
