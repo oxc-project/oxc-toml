@@ -13,6 +13,7 @@ description = "A TOML formatter library"
 
 [lib]
 test = false
+doctest = false
 
 [dev-dependencies]
 walkdir = "2"
