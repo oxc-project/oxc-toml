@@ -710,7 +710,7 @@ fn format_inline_table(
 
     let mut sorted_children = if options.reorder_inline_tables {
         let mut children: Vec<_> = node.children().collect();
-        children.sort_unstable_by(|x, y| x.to_string().cmp(&y.to_string()));
+        children.sort_by_cached_key(|x| x.to_string());
         Some(VecDeque::from(children))
     } else {
         None
