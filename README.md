@@ -28,6 +28,7 @@ This project is a formatter-only fork of the excellent [Taplo](https://github.co
 ### What Changed
 
 This fork strips away all non-formatter components from Taplo, including:
+
 - CLI tool
 - Language Server Protocol (LSP) implementation
 - WebAssembly bindings
@@ -40,6 +41,7 @@ The result is a focused, lightweight library that does one thing well: format TO
 ### Original Taplo Project
 
 Taplo is a comprehensive TOML toolkit that provides:
+
 - TOML v1.0.0 parser
 - Formatter (the foundation of this fork)
 - Language server for IDE integration

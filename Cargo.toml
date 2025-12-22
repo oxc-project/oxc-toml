@@ -1,15 +1,15 @@
 [package]
-name         = "oxc-toml"
-description  = "A TOML formatter library"
-version      = "0.14.1"
-categories   = ["parser-implementations", "parsing"]
-keywords     = ["toml", "formatter"]
-readme       = "README.md"
-authors      = ["Boshen"]
-edition      = "2024"
-license      = "MIT"
-homepage     = "https://github.com/oxc-project/oxc-toml"
-repository   = "https://github.com/oxc-project/oxc-toml"
+name = "oxc-toml"
+version = "0.14.1"
+authors = ["Boshen"]
+categories = ["parser-implementations", "parsing"]
+edition = "2024"
+homepage = "https://github.com/oxc-project/oxc-toml"
+keywords = ["toml", "formatter"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/oxc-project/oxc-toml"
+description = "A TOML formatter library"
 
 [lib]
 test = false
