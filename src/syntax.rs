@@ -75,28 +75,32 @@ pub type SyntaxElement = rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
 
 // Helper functions for lexing
 fn lex_string(input: &str) -> Option<usize> {
+    let bytes = input.as_bytes();
     let mut escaped = false;
-    let mut total_len = 0;
+    let mut i = 0;
 
-    for c in input.chars() {
-        total_len += c.len_utf8();
+    while i < bytes.len() {
+        let b = bytes[i];
 
-        if c == '\\' {
+        if b == b'\\' {
             escaped = !escaped;
+            i += 1;
             continue;
         }
 
-        if c == '"' && !escaped {
-            return Some(total_len);
+        if b == b'"' && !escaped {
+            return Some(i + 1);
         }
 
         escaped = false;
+        i += 1;
     }
     None
 }
 
 fn lex_multi_line_string(input: &str) -> Option<usize> {
-    let mut total_len = 0;
+    let bytes = input.as_bytes();
+    let mut i = 0;
     let mut quote_count = 0;
     let mut escaped = false;
 
@@ -106,27 +110,29 @@ fn lex_multi_line_string(input: &str) -> Option<usize> {
     // in the string.
     let mut quotes_found = false;
 
-    for c in input.chars() {
+    while i < bytes.len() {
+        let b = bytes[i];
+
         if quotes_found {
-            if c != '"' {
+            if b != b'"' {
                 if quote_count >= 6 {
                     return None;
                 }
-                return Some(total_len);
+                return Some(i);
             } else {
                 quote_count += 1;
-                total_len += c.len_utf8();
+                i += 1;
                 continue;
             }
         }
-        total_len += c.len_utf8();
+        i += 1;
 
-        if c == '\\' {
+        if b == b'\\' {
             escaped = true;
             continue;
         }
 
-        if c == '"' && !escaped {
+        if b == b'"' && !escaped {
             quote_count += 1;
         } else {
             quote_count = 0;
@@ -144,27 +150,26 @@ fn lex_multi_line_string(input: &str) -> Option<usize> {
         if quote_count >= 6 {
             return None;
         }
-        Some(total_len)
+        Some(i)
     } else {
         None
     }
 }
 
 fn lex_string_literal(input: &str) -> Option<usize> {
-    let mut total_len = 0;
+    let bytes = input.as_bytes();
 
-    for c in input.chars() {
-        total_len += c.len_utf8();
-
-        if c == '\'' {
-            return Some(total_len);
+    for (i, &b) in bytes.iter().enumerate() {
+        if b == b'\'' {
+            return Some(i + 1);
         }
     }
     None
 }
 
 fn lex_multi_line_string_literal(input: &str) -> Option<usize> {
-    let mut total_len = 0;
+    let bytes = input.as_bytes();
+    let mut i = 0;
     let mut quote_count = 0;
 
     // As the string can contain ',
@@ -173,23 +178,25 @@ fn lex_multi_line_string_literal(input: &str) -> Option<usize> {
     // in the string.
     let mut quotes_found = false;
 
-    for c in input.chars() {
+    while i < bytes.len() {
+        let b = bytes[i];
+
         if quotes_found {
-            if c != '\'' {
-                return Some(total_len);
+            if b != b'\'' {
+                return Some(i);
             } else {
                 if quote_count > 4 {
                     return None;
                 }
 
                 quote_count += 1;
-                total_len += c.len_utf8();
+                i += 1;
                 continue;
             }
         }
-        total_len += c.len_utf8();
+        i += 1;
 
-        if c == '\'' {
+        if b == b'\'' {
             quote_count += 1;
         } else {
             quote_count = 0;
@@ -201,67 +208,63 @@ fn lex_multi_line_string_literal(input: &str) -> Option<usize> {
     }
 
     // End of input
-    if quotes_found { Some(total_len) } else { None }
+    if quotes_found { Some(i) } else { None }
 }
 
 // Helper functions for matching patterns
-fn is_whitespace(c: char) -> bool {
-    c == ' ' || c == '\t'
+fn is_whitespace(b: u8) -> bool {
+    b == b' ' || b == b'\t'
 }
 
-fn is_ident_char(c: char) -> bool {
-    c.is_ascii_alphanumeric() || c == '_' || c == '-'
+fn is_ident_char(b: u8) -> bool {
+    b.is_ascii_alphanumeric() || b == b'_' || b == b'-'
 }
 
-fn is_ident_with_glob_char(c: char) -> bool {
-    is_ident_char(c) || c == '*' || c == '?'
+fn is_ident_with_glob_char(b: u8) -> bool {
+    is_ident_char(b) || b == b'*' || b == b'?'
 }
 
-fn is_hex_digit(c: char) -> bool {
-    c.is_ascii_hexdigit()
+fn is_hex_digit(b: u8) -> bool {
+    b.is_ascii_hexdigit()
 }
 
 // Lexer implementation for SyntaxKind
 impl<'source> LexerToken<'source> for SyntaxKind {
     fn lex(input: &'source str) -> Option<(Self, usize)> {
-        let mut chars = input.chars();
-        let first = chars.next()?;
+        let bytes = input.as_bytes();
+        let first = *bytes.first()?;
 
         // Try to match tokens in order of priority
 
         // Single character tokens
         match first {
-            '.' => return Some((SyntaxKind::PERIOD, 1)),
-            ',' => return Some((SyntaxKind::COMMA, 1)),
-            '=' => return Some((SyntaxKind::EQ, 1)),
-            '[' => return Some((SyntaxKind::BRACKET_START, 1)),
-            ']' => return Some((SyntaxKind::BRACKET_END, 1)),
-            '{' => return Some((SyntaxKind::BRACE_START, 1)),
-            '}' => return Some((SyntaxKind::BRACE_END, 1)),
+            b'.' => return Some((SyntaxKind::PERIOD, 1)),
+            b',' => return Some((SyntaxKind::COMMA, 1)),
+            b'=' => return Some((SyntaxKind::EQ, 1)),
+            b'[' => return Some((SyntaxKind::BRACKET_START, 1)),
+            b']' => return Some((SyntaxKind::BRACKET_END, 1)),
+            b'{' => return Some((SyntaxKind::BRACE_START, 1)),
+            b'}' => return Some((SyntaxKind::BRACE_END, 1)),
             _ => {}
         }
 
         // Whitespace
         if is_whitespace(first) {
-            let len = input.chars().take_while(|&c| is_whitespace(c)).map(|c| c.len_utf8()).sum();
+            let len = bytes.iter().take_while(|&&b| is_whitespace(b)).count();
             return Some((SyntaxKind::WHITESPACE, len));
         }
 
         // Newline
-        if first == '\n' {
-            let len = input.chars().take_while(|&c| c == '\n').map(|c| c.len_utf8()).sum();
+        if first == b'\n' {
+            let len = bytes.iter().take_while(|&&b| b == b'\n').count();
             return Some((SyntaxKind::NEWLINE, len));
         }
-        if first == '\r' && input.starts_with("\r\n") {
+        if first == b'\r' && bytes.len() >= 2 && bytes[1] == b'\n' {
             let mut len = 0;
             let mut i = 0;
-            while i < input.len() {
-                if input[i..].starts_with("\r\n") {
-                    len += 2;
-                    i += 2;
-                } else {
-                    break;
-                }
+            while i + 1 < bytes.len() && bytes[i] == b'\r' && bytes[i + 1] == b'\n' {
+                len += 2;
+                i += 2;
             }
             if len > 0 {
                 return Some((SyntaxKind::NEWLINE, len));
@@ -269,33 +272,32 @@ impl<'source> LexerToken<'source> for SyntaxKind {
         }
 
         // Comment
-        if first == '#' {
-            let len =
-                input.chars().take_while(|&c| c != '\n' && c != '\r').map(|c| c.len_utf8()).sum();
+        if first == b'#' {
+            let len = bytes.iter().take_while(|&&b| b != b'\n' && b != b'\r').count();
             return Some((SyntaxKind::COMMENT, len));
         }
 
         // Multi-line strings (must check before single quote/double quote)
-        if let Some(stripped) = input.strip_prefix("\"\"\"")
-            && let Some(len) = lex_multi_line_string(stripped)
+        if bytes.len() >= 3 && &bytes[..3] == b"\"\"\""
+            && let Some(len) = lex_multi_line_string(&input[3..])
         {
             return Some((SyntaxKind::MULTI_LINE_STRING, 3 + len));
         }
-        if let Some(stripped) = input.strip_prefix("'''")
-            && let Some(len) = lex_multi_line_string_literal(stripped)
+        if bytes.len() >= 3 && &bytes[..3] == b"'''"
+            && let Some(len) = lex_multi_line_string_literal(&input[3..])
         {
             return Some((SyntaxKind::MULTI_LINE_STRING_LITERAL, 3 + len));
         }
 
         // String
-        if first == '"'
+        if first == b'"'
             && let Some(len) = lex_string(&input[1..])
         {
             return Some((SyntaxKind::STRING, 1 + len));
         }
 
         // String literal
-        if first == '\''
+        if first == b'\''
             && let Some(len) = lex_string_literal(&input[1..])
         {
             return Some((SyntaxKind::STRING_LITERAL, 1 + len));
@@ -310,7 +312,7 @@ impl<'source> LexerToken<'source> for SyntaxKind {
         }
 
         // Numbers and dates (complex matching)
-        if first.is_ascii_digit() || first == '+' || first == '-' {
+        if first.is_ascii_digit() || first == b'+' || first == b'-' {
             // Try date/time first (they are more specific)
             if let Some(len) = try_lex_datetime(input) {
                 return Some(len);
@@ -318,41 +320,29 @@ impl<'source> LexerToken<'source> for SyntaxKind {
 
             // Try float keywords
             if input.starts_with("nan") || input.starts_with("+nan") || input.starts_with("-nan") {
-                let len = if first == '+' || first == '-' { 4 } else { 3 };
+                let len = if first == b'+' || first == b'-' { 4 } else { 3 };
                 return Some((SyntaxKind::FLOAT, len));
             }
             if input.starts_with("inf") || input.starts_with("+inf") || input.starts_with("-inf") {
-                let len = if first == '+' || first == '-' { 4 } else { 3 };
+                let len = if first == b'+' || first == b'-' { 4 } else { 3 };
                 return Some((SyntaxKind::FLOAT, len));
             }
 
             // Try integers with different bases
-            if let Some(stripped) = input.strip_prefix("0x") {
-                let len = 2 + stripped
-                    .chars()
-                    .take_while(|&c| is_hex_digit(c) || c == '_')
-                    .map(|c| c.len_utf8())
-                    .sum::<usize>();
+            if bytes.len() >= 2 && bytes[0] == b'0' && bytes[1] == b'x' {
+                let len = 2 + bytes[2..].iter().take_while(|&&b| is_hex_digit(b) || b == b'_').count();
                 if len > 2 {
                     return Some((SyntaxKind::INTEGER_HEX, len));
                 }
             }
-            if let Some(stripped) = input.strip_prefix("0o") {
-                let len = 2 + stripped
-                    .chars()
-                    .take_while(|&c| ('0'..='7').contains(&c) || c == '_')
-                    .map(|c| c.len_utf8())
-                    .sum::<usize>();
+            if bytes.len() >= 2 && bytes[0] == b'0' && bytes[1] == b'o' {
+                let len = 2 + bytes[2..].iter().take_while(|&&b| (b'0'..=b'7').contains(&b) || b == b'_').count();
                 if len > 2 {
                     return Some((SyntaxKind::INTEGER_OCT, len));
                 }
             }
-            if let Some(stripped) = input.strip_prefix("0b") {
-                let len = 2 + stripped
-                    .chars()
-                    .take_while(|&c| c == '0' || c == '1' || c == '_')
-                    .map(|c| c.len_utf8())
-                    .sum::<usize>();
+            if bytes.len() >= 2 && bytes[0] == b'0' && bytes[1] == b'b' {
+                let len = 2 + bytes[2..].iter().take_while(|&&b| b == b'0' || b == b'1' || b == b'_').count();
                 if len > 2 {
                     return Some((SyntaxKind::INTEGER_BIN, len));
                 }
@@ -365,18 +355,14 @@ impl<'source> LexerToken<'source> for SyntaxKind {
         }
 
         // Identifier (lower priority than keywords)
-        if first.is_ascii_alphanumeric() || first == '_' || first == '-' {
-            let len = input.chars().take_while(|&c| is_ident_char(c)).map(|c| c.len_utf8()).sum();
+        if first.is_ascii_alphanumeric() || first == b'_' || first == b'-' {
+            let len = bytes.iter().take_while(|&&b| is_ident_char(b)).count();
             return Some((SyntaxKind::IDENT, len));
         }
 
         // Identifier with glob
-        if first == '*' || first == '?' {
-            let len = input
-                .chars()
-                .take_while(|&c| is_ident_with_glob_char(c))
-                .map(|c| c.len_utf8())
-                .sum();
+        if first == b'*' || first == b'?' {
+            let len = bytes.iter().take_while(|&&b| is_ident_with_glob_char(b)).count();
             return Some((SyntaxKind::IDENT_WITH_GLOB, len));
         }
 
