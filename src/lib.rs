@@ -4,9 +4,6 @@
 //! The main purpose of this library is to format TOML documents while preserving
 //! the original layout, comments, and whitespace where appropriate.
 //!
-//! It uses [Rowan](::rowan) for the syntax tree, and every character is preserved from the input,
-//! including all comments and white space.
-//!
 //! # Usage
 //!
 //! A TOML document can be formatted directly using the [formatter::format] function:
@@ -23,6 +20,7 @@ mod formatter;
 mod lexer;
 mod parser;
 mod syntax;
+mod tree;
 mod util;
 
 pub use formatter::{Options, format};

@@ -1,7 +1,7 @@
 macro_rules! with_node {
     ($builder:expr, $kind:ident, $($content:tt)*) => {
         {
-            $builder.start_node($kind.into());
+            $builder.start_node($kind);
             let res = $($content)*;
             $builder.finish_node();
             res

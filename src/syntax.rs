@@ -50,28 +50,8 @@ pub enum SyntaxKind {
     ROOT, // root node
 }
 
-impl From<SyntaxKind> for rowan::SyntaxKind {
-    fn from(kind: SyntaxKind) -> Self {
-        Self(kind as u16)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Lang {}
-impl rowan::Language for Lang {
-    type Kind = SyntaxKind;
-    fn kind_from_raw(raw: rowan::SyntaxKind) -> Self::Kind {
-        assert!(raw.0 <= SyntaxKind::ROOT as u16);
-        unsafe { std::mem::transmute::<u16, SyntaxKind>(raw.0) }
-    }
-    fn kind_to_raw(kind: Self::Kind) -> rowan::SyntaxKind {
-        kind.into()
-    }
-}
-
-pub type SyntaxNode = rowan::SyntaxNode<Lang>;
-pub type SyntaxToken = rowan::SyntaxToken<Lang>;
-pub type SyntaxElement = rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
+// Type aliases for tree types
+pub use crate::tree::{Element as SyntaxElement, Node as SyntaxNode, Token as SyntaxToken};
 
 // Helper functions for lexing
 fn lex_string(input: &str) -> Option<usize> {

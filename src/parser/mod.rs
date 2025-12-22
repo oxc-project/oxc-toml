@@ -1,12 +1,12 @@
+#![allow(clippy::useless_conversion)]
 //! TOML document to syntax tree parsing.
 
 use crate::{
     lexer::Lexer,
-    syntax::{SyntaxKind, SyntaxKind::*, SyntaxNode},
+    syntax::{SyntaxKind, SyntaxKind::*},
+    tree::{SyntaxTree, TextRange, TreeBuilder, text_range},
     util::{allowed_chars, check_escape},
 };
-use rowan::{GreenNode, GreenNodeBuilder, TextRange, TextSize};
-use std::convert::TryInto;
 
 #[macro_use]
 mod macros;
@@ -28,7 +28,7 @@ impl core::fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 
-/// Parse a TOML document into a [Rowan green tree](rowan::GreenNode).
+/// Parse a TOML document into a syntax tree.
 ///
 /// The parsing will not stop at unexpected or invalid tokens.
 /// Instead errors will be collected with their character offsets and lengths,
@@ -43,9 +43,8 @@ pub fn parse(source: &str) -> Parse {
     Parser::new(source).parse()
 }
 
-/// A hand-written parser that uses the Logos lexer
-/// to tokenize the source, then constructs
-/// a Rowan green tree from them.
+/// A hand-written parser that uses a custom lexer
+/// to tokenize the source, then constructs a syntax tree from them.
 pub(crate) struct Parser<'p> {
     skip_whitespace: bool,
     // Allow glob patterns as keys and using [] instead of dots.
@@ -69,7 +68,7 @@ pub(crate) struct Parser<'p> {
     error_whitelist: u16,
 
     lexer: Lexer<'p, SyntaxKind>,
-    builder: GreenNodeBuilder<'p>,
+    builder: TreeBuilder,
     errors: Vec<Error>,
 }
 
@@ -83,7 +82,7 @@ impl Parser<'_> {
         self.key_pattern_syntax = true;
         let _ = with_node!(self.builder, KEY, self.parse_key());
 
-        Parse { green_node: self.builder.finish(), errors: self.errors }
+        Parse { tree: self.builder.finish(), errors: self.errors }
     }
 }
 
@@ -103,7 +102,7 @@ impl<'p> Parser<'p> {
             key_pattern_syntax: false,
             error_whitelist: 0,
             lexer: Lexer::new(source),
-            builder: Default::default(),
+            builder: TreeBuilder::new(source),
             errors: Default::default(),
         }
     }
@@ -111,28 +110,19 @@ impl<'p> Parser<'p> {
     fn parse(mut self) -> Parse {
         let _ = with_node!(self.builder, ROOT, self.parse_root());
 
-        Parse { green_node: self.builder.finish(), errors: self.errors }
+        Parse { tree: self.builder.finish(), errors: self.errors }
     }
 
     fn error(&mut self, message: &str) -> ParserResult<()> {
         let span = self.lexer.span();
 
-        let err = Error {
-            range: TextRange::new(
-                TextSize::from(span.start as u32),
-                TextSize::from(span.end as u32),
-            ),
-            message: message.into(),
-        };
+        let err = Error { range: text_range(span.start, span.end), message: message.into() };
 
         let same_error = self.errors.last().map(|e| e.range == err.range).unwrap_or(false);
 
         if !same_error {
             self.add_error(&Error {
-                range: TextRange::new(
-                    TextSize::from(span.start as u32),
-                    TextSize::from(span.end as u32),
-                ),
+                range: text_range(span.start, span.end),
                 message: message.into(),
             });
             if let Some(t) = self.current_token
@@ -150,13 +140,7 @@ impl<'p> Parser<'p> {
     // report error without consuming the current the token
     fn report_error(&mut self, message: &str) -> ParserResult<()> {
         let span = self.lexer.span();
-        self.add_error(&Error {
-            range: TextRange::new(
-                TextSize::from(span.start as u32),
-                TextSize::from(span.end as u32),
-            ),
-            message: message.into(),
-        });
+        self.add_error(&Error { range: text_range(span.start, span.end), message: message.into() });
         Err(())
     }
 
@@ -186,7 +170,7 @@ impl<'p> Parser<'p> {
     }
 
     fn insert_token(&mut self, kind: SyntaxKind, s: &str) {
-        self.builder.token(kind.into(), s)
+        self.builder.token(kind, s)
     }
 
     fn must_token_or(&mut self, kind: SyntaxKind, message: &str) -> ParserResult<()> {
@@ -200,10 +184,7 @@ impl<'p> Parser<'p> {
             }
             Err(_) => {
                 self.add_error(&Error {
-                    range: TextRange::new(
-                        self.lexer.span().start.try_into().unwrap(),
-                        self.lexer.span().end.try_into().unwrap(),
-                    ),
+                    range: text_range(self.lexer.span().start, self.lexer.span().end),
                     message: "unexpected EOF".into(),
                 });
                 Err(())
@@ -216,7 +197,7 @@ impl<'p> Parser<'p> {
         match self.get_token() {
             Err(_) => Err(()),
             Ok(token) => {
-                self.builder.token(token.into(), self.lexer.slice());
+                self.builder.token(token, self.lexer.slice());
                 self.current_token = None;
                 Ok(())
             }
@@ -244,7 +225,7 @@ impl<'p> Parser<'p> {
         match self.get_token() {
             Err(_) => return Err(()),
             Ok(_) => {
-                self.builder.token(kind.into(), self.lexer.slice());
+                self.builder.token(kind, self.lexer.slice());
             }
         }
 
@@ -262,9 +243,9 @@ impl<'p> Parser<'p> {
                         Err(err_indices) => {
                             for e in err_indices {
                                 self.add_error(&Error {
-                                    range: TextRange::new(
-                                        (self.lexer.span().start + e).try_into().unwrap(),
-                                        (self.lexer.span().start + e).try_into().unwrap(),
+                                    range: text_range(
+                                        self.lexer.span().start + e,
+                                        self.lexer.span().start + e,
                                     ),
                                     message: "invalid character in comment".into(),
                                 });
@@ -286,10 +267,7 @@ impl<'p> Parser<'p> {
                     self.insert_token(token, self.lexer.slice());
                     let span = self.lexer.span();
                     self.add_error(&Error {
-                        range: TextRange::new(
-                            span.start.try_into().unwrap(),
-                            span.end.try_into().unwrap(),
-                        ),
+                        range: text_range(span.start, span.end),
                         message: "unexpected token".into(),
                     })
                 }
@@ -367,7 +345,7 @@ impl<'p> Parser<'p> {
                         self.builder.finish_node();
                     }
                     not_newline = true;
-                    self.builder.start_node(ENTRY.into());
+                    self.builder.start_node(ENTRY);
                     entry_started = true;
                     let _ = whitelisted!(self, NEWLINE, self.parse_entry());
                 }
@@ -509,9 +487,9 @@ impl<'p> Parser<'p> {
                     Err(err_indices) => {
                         for e in err_indices {
                             self.add_error(&Error {
-                                range: TextRange::new(
-                                    (self.lexer.span().start + e).try_into().unwrap(),
-                                    (self.lexer.span().start + e).try_into().unwrap(),
+                                range: text_range(
+                                    self.lexer.span().start + e,
+                                    self.lexer.span().start + e,
                                 ),
                                 message: "invalid control character in string literal".into(),
                             });
@@ -527,9 +505,9 @@ impl<'p> Parser<'p> {
                     Err(err_indices) => {
                         for e in err_indices {
                             self.add_error(&Error {
-                                range: TextRange::new(
-                                    (self.lexer.span().start + e).try_into().unwrap(),
-                                    (self.lexer.span().start + e).try_into().unwrap(),
+                                range: text_range(
+                                    self.lexer.span().start + e,
+                                    self.lexer.span().start + e,
                                 ),
                                 message: "invalid character in string".into(),
                             });
@@ -542,9 +520,9 @@ impl<'p> Parser<'p> {
                     Err(err_indices) => {
                         for e in err_indices {
                             self.add_error(&Error {
-                                range: TextRange::new(
-                                    (self.lexer.span().start + e).try_into().unwrap(),
-                                    (self.lexer.span().start + e).try_into().unwrap(),
+                                range: text_range(
+                                    self.lexer.span().start + e,
+                                    self.lexer.span().start + e,
                                 ),
                                 message: "invalid escape sequence".into(),
                             });
@@ -662,9 +640,9 @@ impl<'p> Parser<'p> {
                     Err(err_indices) => {
                         for e in err_indices {
                             self.add_error(&Error {
-                                range: TextRange::new(
-                                    (self.lexer.span().start + e).try_into().unwrap(),
-                                    (self.lexer.span().start + e).try_into().unwrap(),
+                                range: text_range(
+                                    self.lexer.span().start + e,
+                                    self.lexer.span().start + e,
                                 ),
                                 message: "invalid control character in string literal".into(),
                             });
@@ -679,9 +657,9 @@ impl<'p> Parser<'p> {
                     Err(err_indices) => {
                         for e in err_indices {
                             self.add_error(&Error {
-                                range: TextRange::new(
-                                    (self.lexer.span().start + e).try_into().unwrap(),
-                                    (self.lexer.span().start + e).try_into().unwrap(),
+                                range: text_range(
+                                    self.lexer.span().start + e,
+                                    self.lexer.span().start + e,
                                 ),
                                 message: "invalid character in string".into(),
                             });
@@ -696,9 +674,9 @@ impl<'p> Parser<'p> {
                     Err(err_indices) => {
                         for e in err_indices {
                             self.add_error(&Error {
-                                range: TextRange::new(
-                                    (self.lexer.span().start + e).try_into().unwrap(),
-                                    (self.lexer.span().start + e).try_into().unwrap(),
+                                range: text_range(
+                                    self.lexer.span().start + e,
+                                    self.lexer.span().start + e,
                                 ),
                                 message: "invalid character in string".into(),
                             });
@@ -711,9 +689,9 @@ impl<'p> Parser<'p> {
                     Err(err_indices) => {
                         for e in err_indices {
                             self.add_error(&Error {
-                                range: TextRange::new(
-                                    (self.lexer.span().start + e).try_into().unwrap(),
-                                    (self.lexer.span().start + e).try_into().unwrap(),
+                                range: text_range(
+                                    self.lexer.span().start + e,
+                                    self.lexer.span().start + e,
                                 ),
                                 message: "invalid escape sequence".into(),
                             });
@@ -732,9 +710,9 @@ impl<'p> Parser<'p> {
                     Err(err_indices) => {
                         for e in err_indices {
                             self.add_error(&Error {
-                                range: TextRange::new(
-                                    (self.lexer.span().start + e).try_into().unwrap(),
-                                    (self.lexer.span().start + e).try_into().unwrap(),
+                                range: text_range(
+                                    self.lexer.span().start + e,
+                                    self.lexer.span().start + e,
                                 ),
                                 message: "invalid character in string".into(),
                             });
@@ -747,9 +725,9 @@ impl<'p> Parser<'p> {
                     Err(err_indices) => {
                         for e in err_indices {
                             self.add_error(&Error {
-                                range: TextRange::new(
-                                    (self.lexer.span().start + e).try_into().unwrap(),
-                                    (self.lexer.span().start + e).try_into().unwrap(),
+                                range: text_range(
+                                    self.lexer.span().start + e,
+                                    self.lexer.span().start + e,
                                 ),
                                 message: "invalid escape sequence".into(),
                             });
@@ -933,13 +911,13 @@ fn is_digit_byte(b: u8, radix: u32) -> bool {
 /// the errors that occurred during parsing.
 #[derive(Debug, Clone)]
 pub struct Parse {
-    pub green_node: GreenNode,
+    pub tree: SyntaxTree,
     pub errors: Vec<Error>,
 }
 
 impl Parse {
-    /// Turn the parse into a syntax node.
-    pub fn into_syntax(self) -> SyntaxNode {
-        SyntaxNode::new_root(self.green_node)
+    /// Turn the parse into a syntax tree.
+    pub fn into_syntax(self) -> SyntaxTree {
+        self.tree
     }
 }

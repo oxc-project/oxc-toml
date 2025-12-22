@@ -1,4 +1,4 @@
-use rowan::TextRange;
+use crate::tree::TextRange;
 
 mod escape;
 
@@ -83,10 +83,5 @@ pub(crate) mod allowed_chars {
 }
 
 pub fn overlaps(range: TextRange, other: TextRange) -> bool {
-    range.contains_range(other)
-        || other.contains_range(range)
-        || range.contains(other.start())
-        || range.contains(other.end())
-        || other.contains(range.start())
-        || other.contains(range.end())
+    range.start < other.end && other.start < range.end
 }
