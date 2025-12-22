@@ -278,12 +278,14 @@ impl<'source> LexerToken<'source> for SyntaxKind {
         }
 
         // Multi-line strings (must check before single quote/double quote)
-        if bytes.len() >= 3 && &bytes[..3] == b"\"\"\""
+        if bytes.len() >= 3
+            && &bytes[..3] == b"\"\"\""
             && let Some(len) = lex_multi_line_string(&input[3..])
         {
             return Some((SyntaxKind::MULTI_LINE_STRING, 3 + len));
         }
-        if bytes.len() >= 3 && &bytes[..3] == b"'''"
+        if bytes.len() >= 3
+            && &bytes[..3] == b"'''"
             && let Some(len) = lex_multi_line_string_literal(&input[3..])
         {
             return Some((SyntaxKind::MULTI_LINE_STRING_LITERAL, 3 + len));
@@ -330,19 +332,26 @@ impl<'source> LexerToken<'source> for SyntaxKind {
 
             // Try integers with different bases
             if bytes.len() >= 2 && bytes[0] == b'0' && bytes[1] == b'x' {
-                let len = 2 + bytes[2..].iter().take_while(|&&b| is_hex_digit(b) || b == b'_').count();
+                let len =
+                    2 + bytes[2..].iter().take_while(|&&b| is_hex_digit(b) || b == b'_').count();
                 if len > 2 {
                     return Some((SyntaxKind::INTEGER_HEX, len));
                 }
             }
             if bytes.len() >= 2 && bytes[0] == b'0' && bytes[1] == b'o' {
-                let len = 2 + bytes[2..].iter().take_while(|&&b| (b'0'..=b'7').contains(&b) || b == b'_').count();
+                let len = 2 + bytes[2..]
+                    .iter()
+                    .take_while(|&&b| (b'0'..=b'7').contains(&b) || b == b'_')
+                    .count();
                 if len > 2 {
                     return Some((SyntaxKind::INTEGER_OCT, len));
                 }
             }
             if bytes.len() >= 2 && bytes[0] == b'0' && bytes[1] == b'b' {
-                let len = 2 + bytes[2..].iter().take_while(|&&b| b == b'0' || b == b'1' || b == b'_').count();
+                let len = 2 + bytes[2..]
+                    .iter()
+                    .take_while(|&&b| b == b'0' || b == b'1' || b == b'_')
+                    .count();
                 if len > 2 {
                     return Some((SyntaxKind::INTEGER_BIN, len));
                 }

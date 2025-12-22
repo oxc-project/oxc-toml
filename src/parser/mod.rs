@@ -889,23 +889,43 @@ impl<'p> Parser<'p> {
 }
 
 fn check_underscores(s: &str, radix: u32) -> bool {
-    if s.starts_with('_') || s.ends_with('_') {
+    let bytes = s.as_bytes();
+    if bytes.first() == Some(&b'_') || bytes.last() == Some(&b'_') {
         return false;
     }
 
-    let mut last_char = 0 as char;
+    let mut last_byte = 0_u8;
 
-    for c in s.chars() {
-        if c == '_' && !last_char.is_digit(radix) {
+    for &b in bytes {
+        let is_digit = match radix {
+            2 => b == b'0' || b == b'1',
+            8 => (b'0'..=b'7').contains(&b),
+            10 => b.is_ascii_digit(),
+            16 => b.is_ascii_hexdigit(),
+            _ => unreachable!(),
+        };
+
+        if b == b'_' && !is_digit_byte(last_byte, radix) {
             return false;
         }
-        if !c.is_digit(radix) && last_char == '_' {
+        if !is_digit && last_byte == b'_' {
             return false;
         }
-        last_char = c;
+        last_byte = b;
     }
 
     true
+}
+
+#[inline]
+fn is_digit_byte(b: u8, radix: u32) -> bool {
+    match radix {
+        2 => b == b'0' || b == b'1',
+        8 => (b'0'..=b'7').contains(&b),
+        10 => b.is_ascii_digit(),
+        16 => b.is_ascii_hexdigit(),
+        _ => unreachable!(),
+    }
 }
 
 /// The final results of a parsing.

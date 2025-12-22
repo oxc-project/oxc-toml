@@ -54,8 +54,8 @@ impl<'source> LexerToken<'source> for Escape {
 
         // Newline escape: backslash followed by optional whitespace and newline
         if let Some(rest) = input.strip_prefix('\\') {
-            let ws_len: usize =
-                rest.chars().take_while(|&c| c == ' ' || c == '\t').map(|c| c.len_utf8()).sum();
+            let bytes = rest.as_bytes();
+            let ws_len = bytes.iter().take_while(|&&b| b == b' ' || b == b'\t').count();
             let after_ws = &rest[ws_len..];
             if after_ws.starts_with('\n') {
                 return Some((Newline, 1 + ws_len + 1));
@@ -67,16 +67,16 @@ impl<'source> LexerToken<'source> for Escape {
 
         // Unicode escape \uXXXX
         if input.starts_with("\\u") && input.len() >= 6 {
-            let hex_chars = &input[2..6];
-            if hex_chars.chars().all(|c| c.is_ascii_hexdigit() || c == '_') {
+            let hex_bytes = &input.as_bytes()[2..6];
+            if hex_bytes.iter().all(|&b| b.is_ascii_hexdigit() || b == b'_') {
                 return Some((Unicode, 6));
             }
         }
 
         // Unicode escape \UXXXXXXXX
         if input.starts_with("\\U") && input.len() >= 10 {
-            let hex_chars = &input[2..10];
-            if hex_chars.chars().all(|c| c.is_ascii_hexdigit() || c == '_') {
+            let hex_bytes = &input.as_bytes()[2..10];
+            if hex_bytes.iter().all(|&b| b.is_ascii_hexdigit() || b == b'_') {
                 return Some((UnicodeLarge, 10));
             }
         }
@@ -86,9 +86,20 @@ impl<'source> LexerToken<'source> for Escape {
             return Some((Unknown, 2));
         }
 
-        // Unescaped character
-        if let Some(c) = input.chars().next() {
-            return Some((UnEscaped, c.len_utf8()));
+        // Unescaped character - need to handle UTF-8 here
+        let bytes = input.as_bytes();
+        if let Some(&first_byte) = bytes.first() {
+            // Determine UTF-8 sequence length from first byte
+            let len = if first_byte < 0x80 {
+                1 // ASCII
+            } else if first_byte < 0xE0 {
+                2 // 2-byte sequence
+            } else if first_byte < 0xF0 {
+                3 // 3-byte sequence
+            } else {
+                4 // 4-byte sequence
+            };
+            return Some((UnEscaped, len));
         }
 
         None
