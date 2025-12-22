@@ -1,10 +1,10 @@
 //! TOML document to syntax tree parsing.
 
 use crate::{
+    lexer::Lexer,
     syntax::{SyntaxKind, SyntaxKind::*, SyntaxNode},
     util::{allowed_chars, check_escape},
 };
-use logos::{Lexer, Logos};
 use rowan::{GreenNode, GreenNodeBuilder, TextRange, TextSize};
 use std::convert::TryInto;
 
@@ -102,7 +102,7 @@ impl<'p> Parser<'p> {
             skip_whitespace: true,
             key_pattern_syntax: false,
             error_whitelist: 0,
-            lexer: SyntaxKind::lexer(source),
+            lexer: Lexer::new(source),
             builder: Default::default(),
             errors: Default::default(),
         }

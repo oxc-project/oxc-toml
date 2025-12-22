@@ -2,92 +2,40 @@
 
 #![allow(non_camel_case_types, clippy::upper_case_acronyms)]
 
-use logos::{Lexer, Logos};
+use crate::lexer::LexerToken;
 
 /// Enum containing all the tokens in a syntax tree.
-#[derive(Logos, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(u16)]
 pub enum SyntaxKind {
-    #[regex(r"([ \t])+")]
     WHITESPACE = 0,
-
-    #[regex(r"(\n|\r\n)+")]
     NEWLINE,
-
-    #[regex(r"#[^\n\r]*", allow_greedy = true)]
     COMMENT,
-
-    #[regex(r"[A-Za-z0-9_-]+", priority = 2)]
     IDENT,
-
     /// Not part of the regular TOML syntax, only used to allow
     /// glob patterns in keys.
-    #[regex(r"[*?A-Za-z0-9_-]+", priority = 1)]
     IDENT_WITH_GLOB,
-
-    #[token(".")]
     PERIOD,
-
-    #[token(",")]
     COMMA,
-
-    #[token("=")]
     EQ,
-
-    #[regex(r#"""#, lex_string)]
     STRING,
-
-    #[regex(r#"""""#, lex_multi_line_string)]
     MULTI_LINE_STRING,
-
-    #[regex(r#"'"#, lex_string_literal)]
     STRING_LITERAL,
-
-    #[regex(r#"'''"#, lex_multi_line_string_literal)]
     MULTI_LINE_STRING_LITERAL,
-
-    #[regex(r"[+-]?[0-9_]+", priority = 4)]
     INTEGER,
-
-    #[regex(r"0x[0-9A-Fa-f_]+")]
     INTEGER_HEX,
-
-    #[regex(r"0o[0-7_]+")]
     INTEGER_OCT,
-
-    #[regex(r"0b(0|1|_)+")]
     INTEGER_BIN,
-
-    #[regex(r"[-+]?([0-9_]+(\.[0-9_]+)?([eE][+-]?[0-9_]+)?|nan|inf)", priority = 3)]
     FLOAT,
-
-    #[regex(r"true|false")]
     BOOL,
-
-    #[regex(r#"(?:[1-9]\d\d\d-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)(?:T|t| )(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:(?:\.|,)\d+)?(?:[Zz]|[+-][01]\d:[0-5]\d)"#)]
     DATE_TIME_OFFSET,
-
-    #[regex(r#"(?:[1-9]\d\d\d-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)(?:T|t| )(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:(?:\.|,)\d+)?"#)]
     DATE_TIME_LOCAL,
-
-    #[regex(r#"(?:[1-9]\d\d\d-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)"#)]
     DATE,
-
-    #[regex(r#"(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:(?:\.|,)\d+)?"#)]
     TIME,
-
-    #[token("[")]
     BRACKET_START,
-
-    #[token("]")]
     BRACKET_END,
-
-    #[token("{")]
     BRACE_START,
-
-    #[token("}")]
     BRACE_END,
-
     ERROR,
 
     // composite types
@@ -125,13 +73,12 @@ pub type SyntaxNode = rowan::SyntaxNode<Lang>;
 pub type SyntaxToken = rowan::SyntaxToken<Lang>;
 pub type SyntaxElement = rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
 
-fn lex_string(lex: &mut Lexer<SyntaxKind>) -> bool {
-    let remainder: &str = lex.remainder();
+// Helper functions for lexing
+fn lex_string(input: &str) -> Option<usize> {
     let mut escaped = false;
-
     let mut total_len = 0;
 
-    for c in remainder.chars() {
+    for c in input.chars() {
         total_len += c.len_utf8();
 
         if c == '\\' {
@@ -140,21 +87,17 @@ fn lex_string(lex: &mut Lexer<SyntaxKind>) -> bool {
         }
 
         if c == '"' && !escaped {
-            lex.bump(total_len);
-            return true;
+            return Some(total_len);
         }
 
         escaped = false;
     }
-    false
+    None
 }
 
-fn lex_multi_line_string(lex: &mut Lexer<SyntaxKind>) -> bool {
-    let remainder: &str = lex.remainder();
-
+fn lex_multi_line_string(input: &str) -> Option<usize> {
     let mut total_len = 0;
     let mut quote_count = 0;
-
     let mut escaped = false;
 
     // As the string can contain ",
@@ -163,15 +106,13 @@ fn lex_multi_line_string(lex: &mut Lexer<SyntaxKind>) -> bool {
     // in the string.
     let mut quotes_found = false;
 
-    for c in remainder.chars() {
+    for c in input.chars() {
         if quotes_found {
             if c != '"' {
                 if quote_count >= 6 {
-                    return false;
+                    return None;
                 }
-
-                lex.bump(total_len);
-                return true;
+                return Some(total_len);
             } else {
                 quote_count += 1;
                 total_len += c.len_utf8();
@@ -201,34 +142,28 @@ fn lex_multi_line_string(lex: &mut Lexer<SyntaxKind>) -> bool {
     // End of input
     if quotes_found {
         if quote_count >= 6 {
-            return false;
+            return None;
         }
-
-        lex.bump(total_len);
-        true
+        Some(total_len)
     } else {
-        false
+        None
     }
 }
 
-fn lex_string_literal(lex: &mut Lexer<SyntaxKind>) -> bool {
-    let remainder: &str = lex.remainder();
+fn lex_string_literal(input: &str) -> Option<usize> {
     let mut total_len = 0;
 
-    for c in remainder.chars() {
+    for c in input.chars() {
         total_len += c.len_utf8();
 
         if c == '\'' {
-            lex.bump(total_len);
-            return true;
+            return Some(total_len);
         }
     }
-    false
+    None
 }
 
-fn lex_multi_line_string_literal(lex: &mut Lexer<SyntaxKind>) -> bool {
-    let remainder: &str = lex.remainder();
-
+fn lex_multi_line_string_literal(input: &str) -> Option<usize> {
     let mut total_len = 0;
     let mut quote_count = 0;
 
@@ -238,14 +173,13 @@ fn lex_multi_line_string_literal(lex: &mut Lexer<SyntaxKind>) -> bool {
     // in the string.
     let mut quotes_found = false;
 
-    for c in remainder.chars() {
+    for c in input.chars() {
         if quotes_found {
             if c != '\'' {
-                lex.bump(total_len);
-                return true;
+                return Some(total_len);
             } else {
                 if quote_count > 4 {
-                    return false;
+                    return None;
                 }
 
                 quote_count += 1;
@@ -267,10 +201,348 @@ fn lex_multi_line_string_literal(lex: &mut Lexer<SyntaxKind>) -> bool {
     }
 
     // End of input
-    if quotes_found {
-        lex.bump(total_len);
-        true
+    if quotes_found { Some(total_len) } else { None }
+}
+
+// Helper functions for matching patterns
+fn is_whitespace(c: char) -> bool {
+    c == ' ' || c == '\t'
+}
+
+fn is_ident_char(c: char) -> bool {
+    c.is_ascii_alphanumeric() || c == '_' || c == '-'
+}
+
+fn is_ident_with_glob_char(c: char) -> bool {
+    is_ident_char(c) || c == '*' || c == '?'
+}
+
+fn is_hex_digit(c: char) -> bool {
+    c.is_ascii_hexdigit()
+}
+
+// Lexer implementation for SyntaxKind
+impl<'source> LexerToken<'source> for SyntaxKind {
+    fn lex(input: &'source str) -> Option<(Self, usize)> {
+        let mut chars = input.chars();
+        let first = chars.next()?;
+
+        // Try to match tokens in order of priority
+
+        // Single character tokens
+        match first {
+            '.' => return Some((SyntaxKind::PERIOD, 1)),
+            ',' => return Some((SyntaxKind::COMMA, 1)),
+            '=' => return Some((SyntaxKind::EQ, 1)),
+            '[' => return Some((SyntaxKind::BRACKET_START, 1)),
+            ']' => return Some((SyntaxKind::BRACKET_END, 1)),
+            '{' => return Some((SyntaxKind::BRACE_START, 1)),
+            '}' => return Some((SyntaxKind::BRACE_END, 1)),
+            _ => {}
+        }
+
+        // Whitespace
+        if is_whitespace(first) {
+            let len = input.chars().take_while(|&c| is_whitespace(c)).map(|c| c.len_utf8()).sum();
+            return Some((SyntaxKind::WHITESPACE, len));
+        }
+
+        // Newline
+        if first == '\n' {
+            let len = input.chars().take_while(|&c| c == '\n').map(|c| c.len_utf8()).sum();
+            return Some((SyntaxKind::NEWLINE, len));
+        }
+        if first == '\r' && input.starts_with("\r\n") {
+            let mut len = 0;
+            let mut i = 0;
+            while i < input.len() {
+                if input[i..].starts_with("\r\n") {
+                    len += 2;
+                    i += 2;
+                } else {
+                    break;
+                }
+            }
+            if len > 0 {
+                return Some((SyntaxKind::NEWLINE, len));
+            }
+        }
+
+        // Comment
+        if first == '#' {
+            let len =
+                input.chars().take_while(|&c| c != '\n' && c != '\r').map(|c| c.len_utf8()).sum();
+            return Some((SyntaxKind::COMMENT, len));
+        }
+
+        // Multi-line strings (must check before single quote/double quote)
+        if let Some(stripped) = input.strip_prefix("\"\"\"")
+            && let Some(len) = lex_multi_line_string(stripped)
+        {
+            return Some((SyntaxKind::MULTI_LINE_STRING, 3 + len));
+        }
+        if let Some(stripped) = input.strip_prefix("'''")
+            && let Some(len) = lex_multi_line_string_literal(stripped)
+        {
+            return Some((SyntaxKind::MULTI_LINE_STRING_LITERAL, 3 + len));
+        }
+
+        // String
+        if first == '"'
+            && let Some(len) = lex_string(&input[1..])
+        {
+            return Some((SyntaxKind::STRING, 1 + len));
+        }
+
+        // String literal
+        if first == '\''
+            && let Some(len) = lex_string_literal(&input[1..])
+        {
+            return Some((SyntaxKind::STRING_LITERAL, 1 + len));
+        }
+
+        // Boolean
+        if input.starts_with("true") {
+            return Some((SyntaxKind::BOOL, 4));
+        }
+        if input.starts_with("false") {
+            return Some((SyntaxKind::BOOL, 5));
+        }
+
+        // Numbers and dates (complex matching)
+        if first.is_ascii_digit() || first == '+' || first == '-' {
+            // Try date/time first (they are more specific)
+            if let Some(len) = try_lex_datetime(input) {
+                return Some(len);
+            }
+
+            // Try float keywords
+            if input.starts_with("nan") || input.starts_with("+nan") || input.starts_with("-nan") {
+                let len = if first == '+' || first == '-' { 4 } else { 3 };
+                return Some((SyntaxKind::FLOAT, len));
+            }
+            if input.starts_with("inf") || input.starts_with("+inf") || input.starts_with("-inf") {
+                let len = if first == '+' || first == '-' { 4 } else { 3 };
+                return Some((SyntaxKind::FLOAT, len));
+            }
+
+            // Try integers with different bases
+            if let Some(stripped) = input.strip_prefix("0x") {
+                let len = 2 + stripped
+                    .chars()
+                    .take_while(|&c| is_hex_digit(c) || c == '_')
+                    .map(|c| c.len_utf8())
+                    .sum::<usize>();
+                if len > 2 {
+                    return Some((SyntaxKind::INTEGER_HEX, len));
+                }
+            }
+            if let Some(stripped) = input.strip_prefix("0o") {
+                let len = 2 + stripped
+                    .chars()
+                    .take_while(|&c| ('0'..='7').contains(&c) || c == '_')
+                    .map(|c| c.len_utf8())
+                    .sum::<usize>();
+                if len > 2 {
+                    return Some((SyntaxKind::INTEGER_OCT, len));
+                }
+            }
+            if let Some(stripped) = input.strip_prefix("0b") {
+                let len = 2 + stripped
+                    .chars()
+                    .take_while(|&c| c == '0' || c == '1' || c == '_')
+                    .map(|c| c.len_utf8())
+                    .sum::<usize>();
+                if len > 2 {
+                    return Some((SyntaxKind::INTEGER_BIN, len));
+                }
+            }
+
+            // Try float or integer
+            if let Some((kind, len)) = try_lex_number(input) {
+                return Some((kind, len));
+            }
+        }
+
+        // Identifier (lower priority than keywords)
+        if first.is_ascii_alphanumeric() || first == '_' || first == '-' {
+            let len = input.chars().take_while(|&c| is_ident_char(c)).map(|c| c.len_utf8()).sum();
+            return Some((SyntaxKind::IDENT, len));
+        }
+
+        // Identifier with glob
+        if first == '*' || first == '?' {
+            let len = input
+                .chars()
+                .take_while(|&c| is_ident_with_glob_char(c))
+                .map(|c| c.len_utf8())
+                .sum();
+            return Some((SyntaxKind::IDENT_WITH_GLOB, len));
+        }
+
+        None
+    }
+}
+
+fn try_lex_number(input: &str) -> Option<(SyntaxKind, usize)> {
+    let mut i = 0;
+    let bytes = input.as_bytes();
+
+    // Optional sign
+    if i < bytes.len() && (bytes[i] == b'+' || bytes[i] == b'-') {
+        i += 1;
+    }
+
+    // Integer part
+    let start = i;
+    while i < bytes.len() && (bytes[i].is_ascii_digit() || bytes[i] == b'_') {
+        i += 1;
+    }
+    if i == start {
+        return None;
+    }
+
+    // Check for float indicators
+    let mut is_float = false;
+
+    // Decimal point
+    if i < bytes.len() && bytes[i] == b'.' {
+        // Make sure it's not just a trailing period
+        if i + 1 < bytes.len() && bytes[i + 1].is_ascii_digit() {
+            is_float = true;
+            i += 1;
+            while i < bytes.len() && (bytes[i].is_ascii_digit() || bytes[i] == b'_') {
+                i += 1;
+            }
+        }
+    }
+
+    // Exponent
+    if i < bytes.len() && (bytes[i] == b'e' || bytes[i] == b'E') {
+        is_float = true;
+        i += 1;
+        if i < bytes.len() && (bytes[i] == b'+' || bytes[i] == b'-') {
+            i += 1;
+        }
+        while i < bytes.len() && (bytes[i].is_ascii_digit() || bytes[i] == b'_') {
+            i += 1;
+        }
+    }
+
+    if i > 0 {
+        Some((if is_float { SyntaxKind::FLOAT } else { SyntaxKind::INTEGER }, i))
     } else {
-        false
+        None
+    }
+}
+
+fn try_lex_datetime(input: &str) -> Option<(SyntaxKind, usize)> {
+    // Simplified datetime matching - try to match date/time patterns
+    // This is a simplified version - the full regex patterns are complex
+
+    // Try to match time first (HH:MM:SS)
+    if let Some(len) = try_match_time(input) {
+        return Some((SyntaxKind::TIME, len));
+    }
+
+    // Try to match date (YYYY-MM-DD)
+    if let Some(date_len) = try_match_date(input) {
+        // Check if followed by time
+        if date_len < input.len() {
+            let rest = &input[date_len..];
+            if (rest.starts_with('T') || rest.starts_with('t') || rest.starts_with(' '))
+                && let Some(time_len) = try_match_time(&rest[1..])
+            {
+                let total = date_len + 1 + time_len;
+                // Check for timezone offset
+                if total < input.len() {
+                    let tz_rest = &input[total..];
+                    if tz_rest.starts_with('Z') || tz_rest.starts_with('z') {
+                        return Some((SyntaxKind::DATE_TIME_OFFSET, total + 1));
+                    }
+                    if let Some(tz_len) = try_match_timezone(tz_rest) {
+                        return Some((SyntaxKind::DATE_TIME_OFFSET, total + tz_len));
+                    }
+                }
+                return Some((SyntaxKind::DATE_TIME_LOCAL, total));
+            }
+        }
+        return Some((SyntaxKind::DATE, date_len));
+    }
+
+    None
+}
+
+fn try_match_date(input: &str) -> Option<usize> {
+    let bytes = input.as_bytes();
+    if bytes.len() < 10 {
+        return None;
+    }
+
+    // YYYY-MM-DD
+    if bytes[0].is_ascii_digit()
+        && bytes[1].is_ascii_digit()
+        && bytes[2].is_ascii_digit()
+        && bytes[3].is_ascii_digit()
+        && bytes[4] == b'-'
+        && bytes[5].is_ascii_digit()
+        && bytes[6].is_ascii_digit()
+        && bytes[7] == b'-'
+        && bytes[8].is_ascii_digit()
+        && bytes[9].is_ascii_digit()
+    {
+        Some(10)
+    } else {
+        None
+    }
+}
+
+fn try_match_time(input: &str) -> Option<usize> {
+    let bytes = input.as_bytes();
+    if bytes.len() < 8 {
+        return None;
+    }
+
+    // HH:MM:SS
+    if bytes[0].is_ascii_digit()
+        && bytes[1].is_ascii_digit()
+        && bytes[2] == b':'
+        && bytes[3].is_ascii_digit()
+        && bytes[4].is_ascii_digit()
+        && bytes[5] == b':'
+        && bytes[6].is_ascii_digit()
+        && bytes[7].is_ascii_digit()
+    {
+        let mut len = 8;
+        // Optional fractional seconds
+        if len < bytes.len() && (bytes[len] == b'.' || bytes[len] == b',') {
+            len += 1;
+            while len < bytes.len() && bytes[len].is_ascii_digit() {
+                len += 1;
+            }
+        }
+        Some(len)
+    } else {
+        None
+    }
+}
+
+fn try_match_timezone(input: &str) -> Option<usize> {
+    let bytes = input.as_bytes();
+    if bytes.len() < 6 {
+        return None;
+    }
+
+    // +HH:MM or -HH:MM
+    if (bytes[0] == b'+' || bytes[0] == b'-')
+        && bytes[1].is_ascii_digit()
+        && bytes[2].is_ascii_digit()
+        && bytes[3] == b':'
+        && bytes[4].is_ascii_digit()
+        && bytes[5].is_ascii_digit()
+    {
+        Some(6)
+    } else {
+        None
     }
 }

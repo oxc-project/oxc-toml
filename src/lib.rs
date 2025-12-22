@@ -20,6 +20,7 @@
 //! ```
 
 mod formatter;
+mod lexer;
 mod parser;
 mod syntax;
 mod util;

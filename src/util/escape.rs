@@ -1,4 +1,4 @@
-use logos::{Lexer, Logos};
+use crate::lexer::{Lexer, LexerToken};
 
 /// Escaping based on:
 ///
@@ -11,46 +11,89 @@ use logos::{Lexer, Logos};
 /// \\         - backslash       (U+005C)
 /// \uXXXX     - unicode         (U+XXXX)
 /// \UXXXXXXXX - unicode         (U+XXXXXXXX)
-#[derive(Logos, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Escape {
-    #[token(r#"\b"#, priority = 5)]
     Backspace,
-
-    #[token(r#"\t"#, priority = 5)]
     Tab,
-
-    #[regex(r#"(\\\s*\n)|(\\\s*\r\n)"#, priority = 5)]
     Newline,
-
-    #[token(r#"\n"#, priority = 5)]
     LineFeed,
-
-    #[token(r#"\f"#, priority = 5)]
     FormFeed,
-
-    #[token(r#"\r"#, priority = 5)]
     CarriageReturn,
-
-    #[token(r#"\""#, priority = 5)]
     Quote,
-
-    #[token(r#"\\"#, priority = 5)]
     Backslash,
-
-    // Same thing repeated 4 times, but the {n} repetition syntax is not supported by Logos
-    #[regex(r#"\\u[0-9A-Fa-f_][0-9A-Fa-f_][0-9A-Fa-f_][0-9A-Fa-f_]"#, priority = 5)]
     Unicode,
-
-    // Same thing repeated 8 times, but the {n} repetition syntax is not supported by Logos
-    #[regex(r#"\\U[0-9A-Fa-f_][0-9A-Fa-f_][0-9A-Fa-f_][0-9A-Fa-f_][0-9A-Fa-f_][0-9A-Fa-f_][0-9A-Fa-f_][0-9A-Fa-f_]"#, priority = 5)]
     UnicodeLarge,
-
-    #[regex(r#"\\."#, priority = 4)]
     Unknown,
-
     UnEscaped,
 }
 use Escape::*;
+
+impl<'source> LexerToken<'source> for Escape {
+    fn lex(input: &'source str) -> Option<(Self, usize)> {
+        if input.starts_with("\\b") {
+            return Some((Backspace, 2));
+        }
+        if input.starts_with("\\t") {
+            return Some((Tab, 2));
+        }
+        if input.starts_with("\\n") {
+            return Some((LineFeed, 2));
+        }
+        if input.starts_with("\\f") {
+            return Some((FormFeed, 2));
+        }
+        if input.starts_with("\\r") {
+            return Some((CarriageReturn, 2));
+        }
+        if input.starts_with("\\\"") {
+            return Some((Quote, 2));
+        }
+        if input.starts_with("\\\\") {
+            return Some((Backslash, 2));
+        }
+
+        // Newline escape: backslash followed by optional whitespace and newline
+        if let Some(rest) = input.strip_prefix('\\') {
+            let ws_len: usize =
+                rest.chars().take_while(|&c| c == ' ' || c == '\t').map(|c| c.len_utf8()).sum();
+            let after_ws = &rest[ws_len..];
+            if after_ws.starts_with('\n') {
+                return Some((Newline, 1 + ws_len + 1));
+            }
+            if after_ws.starts_with("\r\n") {
+                return Some((Newline, 1 + ws_len + 2));
+            }
+        }
+
+        // Unicode escape \uXXXX
+        if input.starts_with("\\u") && input.len() >= 6 {
+            let hex_chars = &input[2..6];
+            if hex_chars.chars().all(|c| c.is_ascii_hexdigit() || c == '_') {
+                return Some((Unicode, 6));
+            }
+        }
+
+        // Unicode escape \UXXXXXXXX
+        if input.starts_with("\\U") && input.len() >= 10 {
+            let hex_chars = &input[2..10];
+            if hex_chars.chars().all(|c| c.is_ascii_hexdigit() || c == '_') {
+                return Some((UnicodeLarge, 10));
+            }
+        }
+
+        // Unknown escape sequence
+        if input.starts_with('\\') && input.len() >= 2 {
+            return Some((Unknown, 2));
+        }
+
+        // Unescaped character
+        if let Some(c) = input.chars().next() {
+            return Some((UnEscaped, c.len_utf8()));
+        }
+
+        None
+    }
+}
 
 /// Same as unescape, but doesn't create a new
 /// unescaped string, and returns all invalid escape indices.

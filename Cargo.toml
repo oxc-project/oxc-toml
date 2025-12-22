@@ -15,7 +15,6 @@ description = "A TOML formatter library"
 test = false
 
 [dependencies]
-logos = "0.16.0"
 rowan = "0.16.1"
 
 [dev-dependencies]
