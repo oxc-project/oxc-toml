@@ -1048,7 +1048,7 @@ trait NewlineCount {
 
 impl NewlineCount for &str {
     fn newline_count(&self) -> usize {
-        self.chars().filter(|c| c == &'\n').count()
+        self.as_bytes().iter().filter(|&&b| b == b'\n').count()
     }
 }
 

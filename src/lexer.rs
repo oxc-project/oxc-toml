@@ -43,9 +43,20 @@ impl<'source, Token: LexerToken<'source>> Iterator for Lexer<'source, Token> {
             self.current_span = start..self.pos;
             Some(Ok(token))
         } else {
-            // Error case - consume one char
-            let c = remainder.chars().next()?;
-            self.pos += c.len_utf8();
+            // Error case - consume one UTF-8 character
+            let bytes = remainder.as_bytes();
+            let first_byte = *bytes.first()?;
+            // Determine UTF-8 sequence length from first byte
+            let char_len = if first_byte < 0x80 {
+                1 // ASCII
+            } else if first_byte < 0xE0 {
+                2 // 2-byte sequence
+            } else if first_byte < 0xF0 {
+                3 // 3-byte sequence
+            } else {
+                4 // 4-byte sequence
+            };
+            self.pos += char_len;
             self.current_span = start..self.pos;
             Some(Err(()))
         }
