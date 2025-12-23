@@ -757,7 +757,7 @@ fn format_inline_table(
 
     // Check if the inline table has any ENTRY nodes (not just tokens like braces)
     let has_entries = node.children().iter().any(|c| c.kind() == ENTRY);
-    
+
     if !has_entries {
         return (Element::Node(node.clone()), "{}".into(), None);
     }

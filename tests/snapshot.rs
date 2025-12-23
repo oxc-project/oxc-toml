@@ -1,15 +1,12 @@
 use std::fs;
 use std::path::Path;
 
-use oxc_toml::{format, Options};
+use oxc_toml::{Options, format};
 use walkdir::WalkDir;
 
 const TOML_TEST_DIR: &str = "toml-test/tests";
 
-const SKIP_VALID: &[&str] = &[
-    "inline-table/newline-comment.toml",
-    "float/inf-and-nan.toml",
-];
+const SKIP_VALID: &[&str] = &["inline-table/newline-comment.toml", "float/inf-and-nan.toml"];
 
 fn should_skip(path: &Path) -> bool {
     let path_str = path.to_string_lossy();
@@ -20,10 +17,7 @@ fn should_skip(path: &Path) -> bool {
 fn snapshot() {
     let valid_dir = Path::new(TOML_TEST_DIR).join("valid");
 
-    assert!(
-        valid_dir.exists(),
-        "toml-test directory not found. Run: git submodule update --init"
-    );
+    assert!(valid_dir.exists(), "toml-test directory not found. Run: git submodule update --init");
 
     // Collect all valid .toml files
     let mut files: Vec<_> = WalkDir::new(&valid_dir)
@@ -51,7 +45,7 @@ fn snapshot() {
 
         // Format entry with clear comparison
         snapshot.push_str(&format!("## {}\n\n", relative_path));
-        
+
         // If content is identical, show once
         if original == formatted {
             snapshot.push_str(&original);
@@ -65,7 +59,7 @@ fn snapshot() {
             if !original.ends_with('\n') {
                 snapshot.push('\n');
             }
-            
+
             snapshot.push_str("\nFormatted:\n");
             snapshot.push_str(&formatted);
             if !formatted.ends_with('\n') {
