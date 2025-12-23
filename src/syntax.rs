@@ -293,21 +293,21 @@ impl<'source> LexerToken<'source> for SyntaxKind {
             return Some((SyntaxKind::BOOL, 5));
         }
 
+        // Try float keywords (nan and inf) - these can start with sign, 'n', or 'i'
+        if input.starts_with("nan") || input.starts_with("+nan") || input.starts_with("-nan") {
+            let len = if first == b'+' || first == b'-' { 4 } else { 3 };
+            return Some((SyntaxKind::FLOAT, len));
+        }
+        if input.starts_with("inf") || input.starts_with("+inf") || input.starts_with("-inf") {
+            let len = if first == b'+' || first == b'-' { 4 } else { 3 };
+            return Some((SyntaxKind::FLOAT, len));
+        }
+
         // Numbers and dates (complex matching)
         if first.is_ascii_digit() || first == b'+' || first == b'-' {
             // Try date/time first (they are more specific)
             if let Some(len) = try_lex_datetime(input) {
                 return Some(len);
-            }
-
-            // Try float keywords
-            if input.starts_with("nan") || input.starts_with("+nan") || input.starts_with("-nan") {
-                let len = if first == b'+' || first == b'-' { 4 } else { 3 };
-                return Some((SyntaxKind::FLOAT, len));
-            }
-            if input.starts_with("inf") || input.starts_with("+inf") || input.starts_with("-inf") {
-                let len = if first == b'+' || first == b'-' { 4 } else { 3 };
-                return Some((SyntaxKind::FLOAT, len));
             }
 
             // Try integers with different bases

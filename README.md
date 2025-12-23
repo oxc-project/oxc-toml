@@ -1,6 +1,6 @@
 # oxc-toml
 
-A TOML v1.0.0 formatter library.
+A TOML formatter library.
 
 This library provides TOML formatting capabilities while preserving comments, whitespace, and the original document structure where appropriate.
 

@@ -633,8 +633,10 @@ fn format_entry(
                     let c = val.trailing_comment();
 
                     if c.is_some() {
-                        debug_assert!(comment.is_none());
-                        comment = c;
+                        // In TOML 1.1, entries can have comments - only take first
+                        if comment.is_none() {
+                            comment = c;
+                        }
                     }
 
                     val.write_to(&mut value, options);
@@ -643,8 +645,10 @@ fn format_entry(
             },
             Element::Token(t) => {
                 if let COMMENT = t.kind() {
-                    debug_assert!(comment.is_none());
-                    comment = Some(t.text(source).into())
+                    // In TOML 1.1, entries can have comments - only take first
+                    if comment.is_none() {
+                        comment = Some(t.text(source).into());
+                    }
                 }
             }
         }
@@ -784,8 +788,12 @@ fn format_inline_table(
                 };
 
                 let entry = format_entry(&child, source, options, context);
-                debug_assert!(entry.comment.is_none());
+                // In TOML 1.1, inline tables can have comments
                 entry.write_to(&mut formatted, options);
+                if let Some(ref c) = entry.comment {
+                    formatted += " ";
+                    formatted += c;
+                }
 
                 node_index += 1;
             }
@@ -813,9 +821,21 @@ fn format_inline_table(
                     formatted += "}";
                 }
                 WHITESPACE | COMMA => {}
+                NEWLINE => {
+                    // TOML 1.1 allows newlines in inline tables
+                    // For now, we preserve them to avoid breaking formatting
+                    formatted += options.newline();
+                }
                 COMMENT => {
-                    debug_assert!(comment.is_none());
-                    comment = Some(t.text(source).into());
+                    // TOML 1.1 allows comments in inline tables
+                    // Comments that aren't attached to entries are trailing comments
+                    if comment.is_none() {
+                        comment = Some(t.text(source).into());
+                    } else {
+                        // Multiple comments - add inline
+                        formatted += " ";
+                        formatted += t.text(source);
+                    }
                 }
                 _ => formatted += t.text(source),
             },

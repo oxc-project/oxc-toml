@@ -6,14 +6,19 @@ use walkdir::WalkDir;
 
 const TOML_TEST_DIR: &str = "toml-test/tests";
 
-/// Files that fail idempotent formatting
+/// Files that fail idempotent formatting  
+/// These use TOML 1.1 features that are challenging to format perfectly
 const SKIP_VALID: &[&str] = &[
-    "inline-table/newline-comment.toml",
-    "float/inf-and-nan.toml", // Comment placement not stable
+    "inline-table/newline-comment.toml", // TOML 1.1: Inline tables with newlines and comments - complex formatting
+    "float/inf-and-nan.toml", // Root-level comments before entries - formatting quirks remain
 ];
 
-/// Files with semantic errors that the parser doesn't detect (parser only does syntactic validation)
-/// OR files that are invalid in TOML 1.0 but valid in TOML 1.1.0
+/// Files that the parser accepts but shouldn't according to the spec
+/// These require semantic validation which is not implemented:
+/// - Duplicate key detection
+/// - Table redefinition/overwrite detection  
+/// - Dotted key vs table conflict detection
+/// Some files are TOML 1.1 features that were invalid in TOML 1.0
 const SKIP_INVALID: &[&str] = &[
     "array/extend-defined-aot.toml",
     "array/extending-table.toml",
@@ -109,6 +114,7 @@ fn toml_files(dir: &str) -> impl Iterator<Item = walkdir::DirEntry> {
 #[test]
 fn test_valid_idempotent() {
     let mut failures = Vec::new();
+    let mut panics = Vec::new();
 
     for entry in toml_files("valid") {
         let path = entry.path();
@@ -118,15 +124,26 @@ fn test_valid_idempotent() {
 
         let source = fs::read_to_string(path).unwrap();
 
-        let first = format(&source, Options::default());
-        let second = format(&first, Options::default());
+        let result = std::panic::catch_unwind(|| {
+            let first = format(&source, Options::default());
+            let second = format(&first, Options::default());
+            first == second
+        });
 
-        if first != second {
-            failures.push(path.to_path_buf());
+        match result {
+            Ok(true) => {}, // Success
+            Ok(false) => failures.push(path.to_path_buf()),
+            Err(_) => panics.push(path.to_path_buf()),
         }
     }
 
-    assert!(failures.is_empty(), "Formatter is not idempotent for:\n{failures:#?}");
+    if !panics.is_empty() {
+        eprintln!("Formatter panicked on:\n{panics:#?}");
+    }
+    if !failures.is_empty() {
+        eprintln!("Formatter is not idempotent for:\n{failures:#?}");
+    }
+    assert!(panics.is_empty() && failures.is_empty());
 }
 
 #[test]
