@@ -10,7 +10,6 @@ const TOML_TEST_DIR: &str = "toml-test/tests";
 /// These use TOML 1.1 features that are challenging to format perfectly
 const SKIP_VALID: &[&str] = &[
     "inline-table/newline-comment.toml", // TOML 1.1: Inline tables with newlines and comments - complex formatting
-    "float/inf-and-nan.toml", // Root-level comments before entries - formatting quirks remain
 ];
 
 /// Files that the parser accepts but shouldn't according to the spec

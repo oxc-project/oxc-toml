@@ -286,21 +286,47 @@ impl<'source> LexerToken<'source> for SyntaxKind {
         }
 
         // Boolean
+        // Bool keywords - must check word boundaries
         if input.starts_with("true") {
-            return Some((SyntaxKind::BOOL, 4));
+            // Check that it's not followed by identifier characters (word boundary check)
+            if bytes.len() > 4 && is_ident_char(bytes[4]) {
+                // Part of a longer identifier like "true_value", not a bool keyword
+                // Fall through to identifier lexing
+            } else {
+                return Some((SyntaxKind::BOOL, 4));
+            }
         }
         if input.starts_with("false") {
-            return Some((SyntaxKind::BOOL, 5));
+            // Check that it's not followed by identifier characters (word boundary check)
+            if bytes.len() > 5 && is_ident_char(bytes[5]) {
+                // Part of a longer identifier like "false_alarm", not a bool keyword
+                // Fall through to identifier lexing
+            } else {
+                return Some((SyntaxKind::BOOL, 5));
+            }
         }
 
         // Try float keywords (nan and inf) - these can start with sign, 'n', or 'i'
+        // Must check word boundaries to avoid matching identifiers like "nan_value" or "infinity"
         if input.starts_with("nan") || input.starts_with("+nan") || input.starts_with("-nan") {
             let len = if first == b'+' || first == b'-' { 4 } else { 3 };
-            return Some((SyntaxKind::FLOAT, len));
+            // Check that it's not followed by identifier characters (word boundary check)
+            if len < bytes.len() && is_ident_char(bytes[len]) {
+                // Part of a longer identifier like "nan_value", not a float keyword
+                // Fall through to identifier lexing
+            } else {
+                return Some((SyntaxKind::FLOAT, len));
+            }
         }
         if input.starts_with("inf") || input.starts_with("+inf") || input.starts_with("-inf") {
             let len = if first == b'+' || first == b'-' { 4 } else { 3 };
-            return Some((SyntaxKind::FLOAT, len));
+            // Check that it's not followed by identifier characters (word boundary check)
+            if len < bytes.len() && is_ident_char(bytes[len]) {
+                // Part of a longer identifier like "infinity", not a float keyword
+                // Fall through to identifier lexing
+            } else {
+                return Some((SyntaxKind::FLOAT, len));
+            }
         }
 
         // Numbers and dates (complex matching)
