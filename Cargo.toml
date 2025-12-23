@@ -17,4 +17,5 @@ doctest = false
 
 [dev-dependencies]
 ignore = "0.4"
+insta = "1.45"
 walkdir = "2"

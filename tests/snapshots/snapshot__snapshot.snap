@@ -1,0 +1,3488 @@
+---
+source: tests/snapshot.rs
+expression: snapshot
+---
+## array/array-subtables.toml
+
+Original:
+[[arr]]
+[arr.subtab]
+val=1
+
+[[arr]]
+[arr.subtab]
+val=2
+
+Formatted:
+[[arr]]
+[arr.subtab]
+val = 1
+
+[[arr]]
+[arr.subtab]
+val = 2
+
+## array/array.toml
+
+Original:
+ints = [1, 2, 3, ]
+floats = [1.1, 2.1, 3.1]
+strings = ["a", "b", "c"]
+dates = [
+	1987-07-05T17:45:00Z,
+	1979-05-27T07:32:00,
+	2006-06-01,
+	11:00:00,
+]
+comments = [
+         1,
+         2, #this is ok
+]
+
+Formatted:
+ints = [1, 2, 3]
+floats = [1.1, 2.1, 3.1]
+strings = ["a", "b", "c"]
+dates = [1987-07-05T17:45:00Z, 1979-05-27T07:32:00, 2006-06-01, 11:00:00]
+comments = [
+  1,
+  2, #this is ok
+]
+
+## array/bool.toml
+
+a = [true, false]
+
+## array/empty.toml
+
+thevoid = [[[[[]]]]]
+
+## array/hetergeneous.toml
+
+mixed = [[1, 2], ["a", "b"], [1.1, 2.1]]
+
+## array/mixed-int-array.toml
+
+Original:
+arrays-and-ints =  [1, ["Arrays are not integers."]]
+
+Formatted:
+arrays-and-ints = [1, ["Arrays are not integers."]]
+
+## array/mixed-int-float.toml
+
+ints-and-floats = [1, 1.1]
+
+## array/mixed-int-string.toml
+
+strings-and-ints = ["hi", 42]
+
+## array/mixed-string-table.toml
+
+Original:
+contributors = [
+  "Foo Bar <foo@example.com>",
+  { name = "Baz Qux", email = "bazqux@example.com", url = "https://example.com/bazqux" }
+]
+
+# Start with a table as the first element. This tests a case that some libraries
+# might have where they will check if the first entry is a table/map/hash/assoc
+# array and then encode it as a table array. This was a reasonable thing to do
+# before TOML 1.0 since arrays could only contain one type, but now it's no
+# longer.
+mixed = [{k="a"}, "b", 1]
+
+Formatted:
+contributors = [
+  "Foo Bar <foo@example.com>",
+  { name = "Baz Qux", email = "bazqux@example.com", url = "https://example.com/bazqux" },
+]
+
+# Start with a table as the first element. This tests a case that some libraries
+# might have where they will check if the first entry is a table/map/hash/assoc
+# array and then encode it as a table array. This was a reasonable thing to do
+# before TOML 1.0 since arrays could only contain one type, but now it's no
+# longer.
+mixed = [{ k = "a" }, "b", 1]
+
+## array/nested-double.toml
+
+Original:
+nest = [
+	[
+		["a"],
+		[1, 2, [3]]
+	]
+]
+
+Formatted:
+nest = [[["a"], [1, 2, [3]]]]
+
+## array/nested-inline-table.toml
+
+Original:
+a = [ { b = {} } ]
+
+Formatted:
+a = [{ b = {  } }]
+
+## array/nested.toml
+
+nest = [["a"], ["b"]]
+
+## array/nospaces.toml
+
+Original:
+ints = [1,2,3]
+
+Formatted:
+ints = [1, 2, 3]
+
+## array/open-parent-table.toml
+
+[[parent-table.arr]]
+[[parent-table.arr]]
+[parent-table]
+not-arr = 1
+
+## array/string-quote-comma-01.toml
+
+Original:
+title = [
+"Client: \"XXXX\", Job: XXXX",
+"Code: XXXX"
+]
+
+Formatted:
+title = ["Client: \"XXXX\", Job: XXXX", "Code: XXXX"]
+
+## array/string-quote-comma-02.toml
+
+Original:
+title = [ " \", ",]
+
+Formatted:
+title = [" \", "]
+
+## array/string-with-comma-01.toml
+
+Original:
+title = [
+"Client: XXXX, Job: XXXX",
+"Code: XXXX"
+]
+
+Formatted:
+title = ["Client: XXXX, Job: XXXX", "Code: XXXX"]
+
+## array/string-with-comma-02.toml
+
+Original:
+title = [
+"""Client: XXXX,
+Job: XXXX""",
+"Code: XXXX"
+]
+
+Formatted:
+title = ["""Client: XXXX,
+Job: XXXX""", "Code: XXXX"]
+
+## array/strings.toml
+
+Original:
+string_array = [ "all", 'strings', """are the same""", '''type''']
+
+Formatted:
+string_array = ["all", 'strings', """are the same""", '''type''']
+
+## array/table-array-string-backslash.toml
+
+Original:
+foo = [ { bar="\"{{baz}}\""} ]
+
+Formatted:
+foo = [{ bar = "\"{{baz}}\"" }]
+
+## array/trailing-comma.toml
+
+Original:
+arr-1 = [1,]
+
+arr-2 = [2,3,]
+
+arr-3 = [4,
+]
+
+arr-4 = [
+	5,
+	6,
+]
+
+Formatted:
+arr-1 = [1]
+
+arr-2 = [2, 3]
+
+arr-3 = [4]
+
+arr-4 = [5, 6]
+
+## bool/bool.toml
+
+t = true
+f = false
+
+## comment/after-literal-no-ws.toml
+
+Original:
+inf=inf#infinity
+nan=nan#not a number
+true=true#true
+false=false#false
+
+Formatted:
+inf = inf     #infinity
+nan = nan     #not a number
+true = true   #true
+false = false #false
+
+## comment/at-eof.toml
+
+# This is a full-line comment
+key = "value" # This is a comment at the end of a line
+
+## comment/at-eof2.toml
+
+# This is a full-line comment
+key = "value" # This is a comment at the end of a line
+
+## comment/everywhere.toml
+
+Original:
+# Top comment.
+  # Top comment.
+# Top comment.
+
+# [no-extraneous-groups-please]
+
+[group] # Comment
+answer = 42 # Comment
+# no-extraneous-keys-please = 999
+# Inbetween comment.
+more = [ # Comment
+  # What about multiple # comments?
+  # Can you handle it?
+  #
+          # Evil.
+# Evil.
+  42, 42, # Comments within arrays are fun.
+  # What about multiple # comments?
+  # Can you handle it?
+  #
+          # Evil.
+# Evil.
+# ] Did I fool you?
+] # Hopefully not.
+
+# Make sure the space between the datetime and "#" isn't lexed.
+dt = 1979-05-27T07:32:12-07:00  # c
+d = 1979-05-27 # Comment
+
+[[aot]] # Comment
+k = 98 # Comment
+[[aot]]# Comment
+k = 99# Comment
+
+Formatted:
+# Top comment.
+# Top comment.
+# Top comment.
+
+# [no-extraneous-groups-please]
+
+[group] # Comment
+answer = 42 # Comment
+# no-extraneous-keys-please = 999
+# Inbetween comment.
+more = [ # Comment
+  # What about multiple # comments?
+  # Can you handle it?
+  #
+  # Evil.
+  # Evil.
+  42,
+  42, # Comments within arrays are fun.
+  # What about multiple # comments?
+  # Can you handle it?
+  #
+  # Evil.
+  # Evil.
+  # ] Did I fool you?
+] # Hopefully not.
+
+# Make sure the space between the datetime and "#" isn't lexed.
+dt = 1979-05-27T07:32:12-07:00 # c
+d = 1979-05-27                 # Comment
+
+[[aot]] # Comment
+k = 98 # Comment
+[[aot]] # Comment
+k = 99 # Comment
+
+## comment/noeol.toml
+
+Original:
+# single comment without any eol characters
+
+Formatted:
+# single comment without any eol characters
+
+## comment/nonascii.toml
+
+# ~  ÿ ퟿  ￿ 𐀀 􏿿
+
+## comment/tricky.toml
+
+Original:
+[section]#attached comment
+#[notsection]
+one = "11"#cmt
+two = "22#"
+three = '#'
+
+four = """# no comment
+# nor this
+#also not comment"""#is_comment
+
+five = 5.5#66
+six = 6#7
+8 = "eight"
+#nine = 99
+ten = 10e2#1
+eleven = 1.11e1#23
+
+["hash#tag"]
+"#!" = "hash bang"
+arr3 = [ "#", '#', """###""" ]
+arr4 = [ 1,# 9, 9,
+2#,9
+,#9
+3#]
+,4]
+arr5 = [[[[#["#"],
+["#"]]]]#]
+]
+tbl1 = { "#" = '}#'}#}}
+
+
+
+Formatted:
+[section] #attached comment
+#[notsection]
+one = "11"  #cmt
+two = "22#"
+three = '#'
+
+four = """# no comment
+# nor this
+#also not comment""" #is_comment
+
+five = 5.5  #66
+six = 6     #7
+8 = "eight"
+#nine = 99
+ten = 10e2      #1
+eleven = 1.11e1 #23
+
+["hash#tag"]
+"#!" = "hash bang"
+arr3 = ["#", '#', """###"""]
+arr4 = [
+  1, # 9, 9,
+  2, #9
+  3, #]
+  4,
+]
+arr5 = [
+  [
+    [
+      [ #["#"],
+        ["#"],
+      ],
+    ],
+  ], #]
+]
+tbl1 = { "#" = '}#' } #}}
+
+
+
+## datetime/datetime.toml
+
+space = 1987-07-05 17:45:00Z
+
+# ABNF is case-insensitive, both "Z" and "z" must be supported.
+lower = 1987-07-05t17:45:00z
+
+## datetime/edge.toml
+
+Original:
+first-offset = 0001-01-01 00:00:00Z
+first-local  = 0001-01-01 00:00:00
+first-date   = 0001-01-01
+
+last-offset = 9999-12-31 23:59:59Z
+last-local  = 9999-12-31 23:59:59
+last-date   = 9999-12-31
+
+Formatted:
+first-offset = 0001-01-01 00:00:00Z
+first-local = 0001-01-01 00:00:00
+first-date = 0001-01-01
+
+last-offset = 9999-12-31 23:59:59Z
+last-local = 9999-12-31 23:59:59
+last-date = 9999-12-31
+
+## datetime/invalid-date-in-string.toml
+
+s = '2020-01-01x'
+
+## datetime/leap-year.toml
+
+2000-datetime       = 2000-02-29 15:15:15Z
+2000-datetime-local = 2000-02-29 15:15:15
+2000-date           = 2000-02-29
+
+2024-datetime       = 2024-02-29 15:15:15Z
+2024-datetime-local = 2024-02-29 15:15:15
+2024-date           = 2024-02-29
+
+## datetime/local-date.toml
+
+bestdayever = 1987-07-05
+
+## datetime/local-time.toml
+
+besttimeever = 17:45:00
+milliseconds = 10:32:00.555
+
+## datetime/local.toml
+
+local = 1987-07-05T17:45:00
+milli = 1977-12-21T10:32:00.555
+space = 1987-07-05 17:45:00
+
+## datetime/milliseconds.toml
+
+Original:
+utc1  = 1987-07-05T17:45:56.123Z
+utc2  = 1987-07-05T17:45:56.6Z
+wita1 = 1987-07-05T17:45:56.123+08:00
+wita2 = 1987-07-05T17:45:56.6+08:00
+
+Formatted:
+utc1 = 1987-07-05T17:45:56.123Z
+utc2 = 1987-07-05T17:45:56.6Z
+wita1 = 1987-07-05T17:45:56.123+08:00
+wita2 = 1987-07-05T17:45:56.6+08:00
+
+## datetime/no-seconds.toml
+
+Original:
+# Seconds are optional in date-time and time.
+without-seconds-1 = 13:37
+without-seconds-2 = 1979-05-27 07:32Z
+without-seconds-3 = 1979-05-27 07:32-07:00
+without-seconds-4 = 1979-05-27T07:32
+
+Formatted:
+without-seconds-1 = 13:37without-seconds-2 = 1979-05-27 07:32Zwithout-seconds-3 = 1979-05-27 07:32-07:00without-seconds-4 = 1979-05-27T07:32# Seconds are optional in date-time and time.
+
+## datetime/timezone.toml
+
+Original:
+utc  = 1987-07-05T17:45:56Z
+pdt  = 1987-07-05T17:45:56-05:00
+nzst = 1987-07-05T17:45:56+12:00
+nzdt = 1987-07-05T17:45:56+13:00  # DST
+
+Formatted:
+utc = 1987-07-05T17:45:56Z
+pdt = 1987-07-05T17:45:56-05:00
+nzst = 1987-07-05T17:45:56+12:00
+nzdt = 1987-07-05T17:45:56+13:00 # DST
+
+## empty-crlf.toml
+
+Original:
+
+
+Formatted:
+
+
+## empty-lf.toml
+
+
+
+## empty-nothing.toml
+
+Original:
+
+
+Formatted:
+
+
+## empty-space.toml
+
+Original:
+ 
+
+Formatted:
+
+
+## empty-tab.toml
+
+Original:
+	
+
+Formatted:
+
+
+## example.toml
+
+best-day-ever = 1987-07-05T17:45:00Z
+
+[numtheory]
+boring = false
+perfection = [6, 28, 496]
+
+## float/exponent.toml
+
+lower = 3e2
+upper = 3E2
+neg = 3e-2
+pos = 3E+2
+zero = 3e0
+pointlower = 3.1e2
+pointupper = 3.1E2
+minustenth = -1E-1
+
+## float/float.toml
+
+pi = 3.14
+pospi = +3.14
+negpi = -3.14
+zero-intpart = 0.123
+leading-zero-fractional = 0.0123
+
+## float/long.toml
+
+longpi = 3.141592653589793
+neglongpi = -3.141592653589793
+
+## float/max-int.toml
+
+Original:
+# Maximum and minimum safe natural numbers.
+max_float =  9_007_199_254_740_991.0
+min_float = -9_007_199_254_740_991.0
+
+Formatted:
+# Maximum and minimum safe natural numbers.
+max_float = 9_007_199_254_740_991.0
+min_float = -9_007_199_254_740_991.0
+
+## float/underscore.toml
+
+before = 3_141.5927
+after = 3141.592_7
+exponent = 3e1_4
+
+## float/zero.toml
+
+zero = 0.0
+signed-pos = +0.0
+signed-neg = -0.0
+exponent = 0e0
+exponent-two-0 = 0e00
+exponent-signed-pos = +0e0
+exponent-signed-neg = -0e0
+
+## implicit-and-explicit-after.toml
+
+[a.b.c]
+answer = 42
+
+[a]
+better = 43
+
+## implicit-and-explicit-before.toml
+
+[a]
+better = 43
+
+[a.b.c]
+answer = 42
+
+## implicit-groups.toml
+
+[a.b.c]
+answer = 42
+
+## inline-table/array-01.toml
+
+Original:
+arr = [ {'a'= 1}, {'a'= 2} ]
+
+people = [{first_name = "Bruce", last_name = "Springsteen"},
+          {first_name = "Eric", last_name = "Clapton"},
+          {first_name = "Bob", last_name = "Seger"}]
+
+Formatted:
+arr = [{ 'a' = 1 }, { 'a' = 2 }]
+
+people = [
+  { first_name = "Bruce", last_name = "Springsteen" },
+  { first_name = "Eric", last_name = "Clapton" },
+  { first_name = "Bob", last_name = "Seger" },
+]
+
+## inline-table/array-02.toml
+
+Original:
+# "No newlines are allowed between the curly braces unless they are valid within
+# a value"
+
+a = { a = [
+]}
+
+Formatted:
+# "No newlines are allowed between the curly braces unless they are valid within
+# a value"
+
+a = { a = [] }
+
+## inline-table/array-03.toml
+
+Original:
+b = { a = [
+		1,
+		2,
+	], b = [
+		3,
+		4,
+	]}
+
+Formatted:
+b = { a = [1, 2], b = [3, 4] }
+
+## inline-table/bool.toml
+
+Original:
+a = {a = true, b = false}
+
+Formatted:
+a = { a = true, b = false }
+
+## inline-table/empty.toml
+
+Original:
+empty1 = {}
+empty2 = { }
+empty_in_array = [ { not_empty = 1 }, {} ]
+empty_in_array2 = [{},{not_empty=1}]
+many_empty = [{},{},{}]
+nested_empty = {"empty"={}}
+with_cmt ={            }#nothing here
+
+Formatted:
+empty1 = {  }
+empty2 = {  }
+empty_in_array = [{ not_empty = 1 }, {  }]
+empty_in_array2 = [{  }, { not_empty = 1 }]
+many_empty = [{  }, {  }, {  }]
+nested_empty = { "empty" = {  } }
+with_cmt = {  }                             #nothing here
+
+## inline-table/end-in-bool.toml
+
+Original:
+black = { python=">3.6", version=">=18.9b0", allow_prereleases=true }
+
+Formatted:
+black = { python = ">3.6", version = ">=18.9b0", allow_prereleases = true }
+
+## inline-table/inline-table.toml
+
+Original:
+name        = { first = "Tom", last = "Preston-Werner" }
+point       = { x = 1, y = 2 }
+simple      = { a = 1 }
+str-key     = { "a" = 1 }
+table-array = [{ "a" = 1 }, { "b" = 2 }]
+
+Formatted:
+name = { first = "Tom", last = "Preston-Werner" }
+point = { x = 1, y = 2 }
+simple = { a = 1 }
+str-key = { "a" = 1 }
+table-array = [{ "a" = 1 }, { "b" = 2 }]
+
+## inline-table/key-dotted-01.toml
+
+Original:
+a = {   a.b  =  1   }
+b = {   "a"."b"  =  1   }
+c = {   a   .   b  =  1   }
+d = {   'a'   .   "b"  =  1   }
+e = {a.b=1}
+
+Formatted:
+a = { a.b = 1 }
+b = { "a"."b" = 1 }
+c = { a.b = 1 }
+d = { 'a'."b" = 1 }
+e = { a.b = 1 }
+
+## inline-table/key-dotted-02.toml
+
+Original:
+many.dots.here.dot.dot.dot = {a.b.c = 1, a.b.d = 2}
+
+Formatted:
+many.dots.here.dot.dot.dot = { a.b.c = 1, a.b.d = 2 }
+
+## inline-table/key-dotted-03.toml
+
+Original:
+[tbl]
+a.b.c = {d.e=1}
+
+[tbl.x]
+a.b.c = {d.e=1}
+
+Formatted:
+[tbl]
+a.b.c = { d.e = 1 }
+
+[tbl.x]
+a.b.c = { d.e = 1 }
+
+## inline-table/key-dotted-04.toml
+
+Original:
+[[arr]]
+t = {a.b=1}
+T = {a.b=1}
+
+[[arr]]
+t = {a.b=2}
+T = {a.b=2}
+
+Formatted:
+[[arr]]
+t = { a.b = 1 }
+T = { a.b = 1 }
+
+[[arr]]
+t = { a.b = 2 }
+T = { a.b = 2 }
+
+## inline-table/key-dotted-05.toml
+
+Original:
+arr-1 = [{a.b = 1}]
+arr-2 = ["str", {a.b = 1}]
+
+arr-3 = [{a.b = 1}, {a.b = 2}]
+arr-4 = ["str", {a.b = 1}, {a.b = 2}]
+
+Formatted:
+arr-1 = [{ a.b = 1 }]
+arr-2 = ["str", { a.b = 1 }]
+
+arr-3 = [{ a.b = 1 }, { a.b = 2 }]
+arr-4 = ["str", { a.b = 1 }, { a.b = 2 }]
+
+## inline-table/key-dotted-06.toml
+
+Original:
+top.dot.dot = [
+	{dot.dot.dot = 1},
+	{dot.dot.dot = 2},
+]
+
+Formatted:
+top.dot.dot = [{ dot.dot.dot = 1 }, { dot.dot.dot = 2 }]
+
+## inline-table/key-dotted-07.toml
+
+Original:
+arr = [
+	{a.b = [{c.d = 1}]}
+]
+
+Formatted:
+arr = [{ a.b = [{ c.d = 1 }] }]
+
+## inline-table/multiline.toml
+
+tbl_multiline = { a = 1, b = """
+multiline
+""", c = """and yet
+another line""", d = 4 }
+
+## inline-table/nest.toml
+
+Original:
+tbl_tbl_empty = { tbl_0 = {} }
+tbl_tbl_val   = { tbl_1 = { one = 1 } }
+tbl_arr_tbl   = { arr_tbl = [ { one = 1 } ] }
+arr_tbl_tbl   = [ { tbl = { one = 1 } } ]
+
+# Array-of-array-of-table is interesting because it can only
+# be represented in inline form.
+arr_arr_tbl_empty = [ [ {} ] ]
+arr_arr_tbl_val = [ [ { one = 1 } ] ]
+arr_arr_tbls  = [ [ { one = 1 }, { two = 2 } ] ]
+
+Formatted:
+tbl_tbl_empty = { tbl_0 = {  } }
+tbl_tbl_val = { tbl_1 = { one = 1 } }
+tbl_arr_tbl = { arr_tbl = [{ one = 1 }] }
+arr_tbl_tbl = [{ tbl = { one = 1 } }]
+
+# Array-of-array-of-table is interesting because it can only
+# be represented in inline form.
+arr_arr_tbl_empty = [[{  }]]
+arr_arr_tbl_val = [[{ one = 1 }]]
+arr_arr_tbls = [[{ one = 1 }, { two = 2 }]]
+
+## inline-table/newline.toml
+
+Original:
+# TOML 1.1 supports newlines in inline tables and trailing commas.
+
+trailing-comma-1 = {
+	c = 1,
+}
+trailing-comma-2 = { c = 1, }
+
+tbl-1 = {
+	hello = "world",
+	1     = 2,
+	arr   = [1,
+	         2,
+	         3,
+	        ],
+	tbl = {
+		 k = 1,
+	}
+}
+
+tbl-2 = {
+	k = """
+	Hello
+	"""
+}
+
+no-newline-before-brace = {
+a = 1,
+b = 2}
+
+no-newline-before-brace-with-comma = {
+a = 1,
+b = 2,}
+
+Formatted:
+# TOML 1.1 supports newlines in inline tables and trailing commas.
+
+trailing-comma-1 = { 
+c = 1
+ }
+trailing-comma-2 = { c = 1 }
+
+tbl-1 = { 
+hello = "world"
+, 1 = 2
+, arr = [1, 2, 3]
+, tbl = { 
+k = 1
+ }
+ }
+
+tbl-2 = { 
+k = """
+	Hello
+	"""
+ }
+
+no-newline-before-brace = { 
+a = 1
+, b = 2 }
+
+no-newline-before-brace-with-comma = { 
+a = 1
+, b = 2 }
+
+## inline-table/spaces.toml
+
+Original:
+# https://github.com/toml-lang/toml-test/issues/146
+clap-1 = { version = "4"  , features = ["derive", "cargo"] }
+
+# Contains some literal tabs!
+clap-2 = { version = "4"	   	,	  	features = [   "derive" 	  ,  	  "cargo"   ]   , nest   =   {  	  "a"   =   'x'  , 	  'b'   = [ 1.5    ,   9.0  ]  }  }
+
+Formatted:
+# https://github.com/toml-lang/toml-test/issues/146
+clap-1 = { version = "4", features = ["derive", "cargo"] }
+
+# Contains some literal tabs!
+clap-2 = { version = "4", features = [
+  "derive",
+  "cargo",
+], nest = { "a" = 'x', 'b' = [
+  1.5,
+  9.0,
+] } }
+
+## integer/float64-max.toml
+
+Original:
+# Maximum and minimum safe float64 natural numbers. Mainly here for
+# -int-as-float.
+max_int =  9_007_199_254_740_991
+min_int = -9_007_199_254_740_991
+
+Formatted:
+# Maximum and minimum safe float64 natural numbers. Mainly here for
+# -int-as-float.
+max_int = 9_007_199_254_740_991
+min_int = -9_007_199_254_740_991
+
+## integer/integer.toml
+
+answer = 42
+posanswer = +42
+neganswer = -42
+zero = 0
+
+## integer/literals.toml
+
+bin1 = 0b11010110
+bin2 = 0b1_0_1
+
+oct1 = 0o01234567
+oct2 = 0o755
+oct3 = 0o7_6_5
+
+hex1 = 0xDEADBEEF
+hex2 = 0xdeadbeef
+hex3 = 0xdead_beef
+hex4 = 0x00987
+
+## integer/long.toml
+
+Original:
+# int64 "should" be supported, but is not mandatory. It's fine to skip this
+# test.
+int64-max     = 9223372036854775807
+int64-max-neg = -9223372036854775808
+
+Formatted:
+# int64 "should" be supported, but is not mandatory. It's fine to skip this
+# test.
+int64-max = 9223372036854775807
+int64-max-neg = -9223372036854775808
+
+## integer/underscore.toml
+
+kilo = 1_000
+x = 1_1_1_1
+
+## integer/zero.toml
+
+d1 = 0
+d2 = +0
+d3 = -0
+
+h1 = 0x0
+h2 = 0x00
+h3 = 0x00000
+
+o1 = 0o0
+a2 = 0o00
+a3 = 0o00000
+
+b1 = 0b0
+b2 = 0b00
+b3 = 0b00000
+
+## key/alphanum.toml
+
+Original:
+alpha = "a"
+123 = "num"
+000111 = "leading"
+10e3 = "false float"
+one1two2 = "mixed"
+with-dash = "dashed"
+under_score = "___"
+34-11 = 23
+
+[2018_10]
+001 = 1
+
+[a-a-a]
+_ = false
+
+Formatted:
+34-11 = 23alpha = "a"
+123 = "num"
+000111 = "leading"
+10e3 = "false float"
+one1two2 = "mixed"
+with-dash = "dashed"
+under_score = "___"
+
+[2018_10]
+001 = 1
+
+[a-a-a]
+_ = false
+
+## key/case-sensitive.toml
+
+sectioN = "NN"
+
+[section]
+name = "lower"
+NAME = "upper"
+Name = "capitalized"
+
+[Section]
+name = "different section!!"
+"μ" = "greek small letter mu"
+"Μ" = "greek capital letter MU"
+M = "latin letter M"
+
+
+## key/dotted-01.toml
+
+name.first = "Arthur"
+"name".'last' = "Dent"
+
+many.dots.dot.dot.dot = 42
+
+## key/dotted-02.toml
+
+Original:
+# Note: this file contains literal tab characters.
+
+# Space are ignored, and key parts can be quoted.
+count.a       = 1
+count . b     = 2
+"count"."c"   = 3
+"count" . "d" = 4
+'count'.'e'   = 5
+'count' . 'f' = 6
+"count".'g'   = 7
+"count" . 'h' = 8
+count.'i'     = 9
+count 	.	 'j'	   = 10
+"count".k     = 11
+"count" . l   = 12
+
+Formatted:
+# Note: this file contains literal tab characters.
+
+# Space are ignored, and key parts can be quoted.
+count.a = 1
+count.b = 2
+"count"."c" = 3
+"count"."d" = 4
+'count'.'e' = 5
+'count'.'f' = 6
+"count".'g' = 7
+"count".'h' = 8
+count.'i' = 9
+count.'j' = 10
+"count".k = 11
+"count".l = 12
+
+## key/dotted-03.toml
+
+top.key = 1
+
+[tbl]
+a.b.c = 42.666
+
+[a.few.dots]
+polka.dot = "again?"
+polka.dance-with = "Dot"
+
+
+## key/dotted-04.toml
+
+Original:
+top.key = 1
+
+[[arr]]
+a.b.c=1
+a.b.d=2
+
+[[arr]]
+a.b.c=3
+a.b.d=4
+
+
+Formatted:
+top.key = 1
+
+[[arr]]
+a.b.c = 1
+a.b.d = 2
+
+[[arr]]
+a.b.c = 3
+a.b.d = 4
+
+
+## key/dotted-empty.toml
+
+''.x = "empty.x"
+x."" = "x.empty"
+[a]
+"".'' = "empty.empty"
+
+## key/empty-01.toml
+
+"" = "blank"
+
+## key/empty-02.toml
+
+'' = "blank"
+
+## key/empty-03.toml
+
+Original:
+''=0
+
+Formatted:
+'' = 0
+
+## key/equals-nospace.toml
+
+Original:
+answer=42
+
+Formatted:
+answer = 42
+
+## key/escapes.toml
+
+"\n" = "newline"
+"\b" = "bell"
+"\u00c0" = "latin capital letter A with grave"
+"\"" = "just a quote"
+
+["backsp\b\b"]
+
+["\"quoted\""]
+quote = true
+
+["a.b"."\u00c0"]
+
+## key/like-date.toml
+
+Original:
+# '-' is a valid character in keys: make a key that looks like a date.
+2001-02-03   = 1
+"2001-02-04" = 2
+'2001-02-05' = 3
+
+# Also include datetime and time for good measure; these need to be quoted as
+# ':' isn't a valid bare key.
+"2001-02-06T15:16:17+01:00" = 4
+"2001-02-07T15:16:17"       = 5
+"15:16:17"                  = 6
+
+# Dotted keys
+a.2001-02-08 = 7
+a.2001-02-09.2001-02-10 = 8
+2001-02-11.a.2001-02-12 = 9
+
+# Table names
+[2002-01-02]
+k = 10
+
+[2002-01-02.2024-01-03]
+k = 11
+
+[[2002-01-04]]
+k = 12
+
+Formatted:
+# '-' is a valid character in keys: make a key that looks like a date.
+2001-02-03 = 1
+"2001-02-04" = 2
+'2001-02-05' = 3
+
+# Also include datetime and time for good measure; these need to be quoted as
+# ':' isn't a valid bare key.
+"2001-02-06T15:16:17+01:00" = 4
+"2001-02-07T15:16:17" = 5
+"15:16:17" = 6
+
+# Dotted keys
+a.2001-02-08 = 7
+a.2001-02-09.2001-02-10 = 8
+2001-02-11.a.2001-02-12 = 9
+
+# Table names
+[2002-01-02]
+k = 10
+
+[2002-01-02.2024-01-03]
+k = 11
+
+[[2002-01-04]]
+k = 12
+
+## key/numeric-01.toml
+
+Original:
+1     = true
+
+Formatted:
+1 = true
+
+## key/numeric-02.toml
+
+Original:
+1.2   = true
+
+Formatted:
+1.2 = true
+
+## key/numeric-03.toml
+
+Original:
+0123  = true
+
+Formatted:
+0123 = true
+
+## key/numeric-04.toml
+
+01.23 = true
+
+## key/numeric-05.toml
+
+23.01 = true
+
+## key/numeric-06.toml
+
+Original:
+-1    = true
+
+Formatted:
+-1 = true
+
+## key/numeric-07.toml
+
+Original:
+-01   = true
+
+Formatted:
+-01 = true
+
+## key/numeric-08.toml
+
+Original:
+1  = 'one'
+01 = 'zero one'
+
+Formatted:
+1 = 'one'
+01 = 'zero one'
+
+## key/quoted-dots.toml
+
+plain = 1
+"with.dot" = 2
+
+[plain_table]
+plain = 3
+"with.dot" = 4
+
+[table.withdot]
+plain = 5
+"key.with.dots" = 6
+"escaped\u002edot" = 7
+
+## key/quoted-unicode.toml
+
+
+"\u0000" = "null"
+'\u0000' = "different key"
+"\u0008 \u000c \U00000041 \u007f \u0080 \u00ff \ud7ff \ue000 \uffff \U00010000 \U0010ffff" = "escaped key"
+
+"~  ÿ ퟿  ￿ 𐀀 􏿿" = "basic key"
+'l ~  ÿ ퟿  ￿ 𐀀 􏿿' = "literal key"
+
+## key/space.toml
+
+Original:
+# Keep whitespace inside quotes keys at all positions.
+"a b"   = 1
+" c d " = 2
+"  much 		  whitespace  	\n  \r\n  " = 3
+
+[ " tbl " ]
+"\ttab\ttab\t" = "tab"
+
+Formatted:
+# Keep whitespace inside quotes keys at all positions.
+"a b" = 1
+" c d " = 2
+"  much 		  whitespace  	\n  \r\n  " = 3
+
+[" tbl "]
+"\ttab\ttab\t" = "tab"
+
+## key/special-chars.toml
+
+"=~!@$^&*()_+-`1234567890[]|/?><.,;:'=" = 1
+
+## key/special-word.toml
+
+false = false
+true = 1
+inf = 100000000
+nan = "ceci n'est pas un nombre"
+
+
+## key/start.toml
+
+Original:
+# Table and keys can start with any character; there is no requirement for it to
+# start with a letter.
+
+[-key]
+-key = 1
+
+[_key]
+_key = 2
+
+[1key]
+1key = 3
+
+[-]
+- = 4
+
+[_]
+_ = 5
+
+[1] 
+1 = 6
+
+[---] 
+--- = 7
+
+[___]
+___ = 8
+
+[111]
+111 = 9
+
+[inline]
+--- = {--- = 10, ___ = 11, 111 = 12}
+
+Formatted:
+# Table and keys can start with any character; there is no requirement for it to
+# start with a letter.
+
+[-key]
+-key = 1
+
+[_key]
+_key = 2
+
+[1key]
+1key = 3
+
+[-]
+- = 4
+
+[_]
+_ = 5
+
+[1]
+1 = 6
+
+[---]
+--- = 7
+
+[___]
+___ = 8
+
+[111]
+111 = 9
+
+[inline]
+--- = { --- = 10, ___ = 11, 111 = 12 }
+
+## key/zero.toml
+
+Original:
+0=0
+
+Formatted:
+0 = 0
+
+## multibyte.toml
+
+Original:
+# Test multibyte throughout
+
+# Tèƨƭ ƒïℓè ƒôř TÓM£
+# Óñℓ¥ ƭλïƨ ôñè ƭřïèƨ ƭô è₥úℓáƭè á TÓM£ ƒïℓè ωřïƭƭèñ β¥ á úƨèř ôƒ ƭλè ƙïñδ ôƒ ƥářƨèř ωřïƭèřƨ ƥřôβáβℓ¥ λáƭè
+
+['𝐭𝐛𝐥']
+string = "𝓼𝓽𝓻𝓲𝓷𝓰 - #"          # " 𝓼𝓽𝓻𝓲𝓷𝓰
+	['𝐭𝐛𝐥'.sub]
+	'𝕒𝕣𝕣𝕒𝕪' = [ "] ", " # "]      # ] 𝓪𝓻𝓻𝓪𝔂
+	'𝕒𝕣𝕣𝕒𝕪𝟚' = [ "Tèƨƭ #11 ]ƥřôƲèδ ƭλáƭ", "Éжƥèřï₥èñƭ #9 ωáƨ á ƨúççèƨƨ" ]
+	# Ýôú δïδñ'ƭ ƭλïñƙ ïƭ'δ áƨ èáƨ¥ áƨ çλúçƙïñϱ ôúƭ ƭλè ℓáƨƭ #, δïδ ¥ôú?
+	another_test_string = "§á₥è ƭλïñϱ, βúƭ ωïƭλ á ƨƭřïñϱ #"
+	escapes = " Âñδ ωλèñ \"'ƨ ářè ïñ ƭλè ƨƭřïñϱ, áℓôñϱ ωïƭλ # \""   # "áñδ çô₥₥èñƭƨ ářè ƭλèřè ƭôô"
+	# Tλïñϱƨ ωïℓℓ ϱèƭ λářδèř
+		['𝐭𝐛𝐥'.sub."βïƭ#"]
+		"ωλáƭ?" = "Ýôú δôñ'ƭ ƭλïñƙ ƨô₥è úƨèř ωôñ'ƭ δô ƭλáƭ?"
+		multi_line_array = [
+			"]",
+			# ] Óλ ¥èƨ Ì δïδ
+			]
+
+Formatted:
+# Test multibyte throughout
+
+# Tèƨƭ ƒïℓè ƒôř TÓM£
+# Óñℓ¥ ƭλïƨ ôñè ƭřïèƨ ƭô è₥úℓáƭè á TÓM£ ƒïℓè ωřïƭƭèñ β¥ á úƨèř ôƒ ƭλè ƙïñδ ôƒ ƥářƨèř ωřïƭèřƨ ƥřôβáβℓ¥ λáƭè
+
+['𝐭𝐛𝐥']
+string = "𝓼𝓽𝓻𝓲𝓷𝓰 - #" # " 𝓼𝓽𝓻𝓲𝓷𝓰
+['𝐭𝐛𝐥'.sub]
+'𝕒𝕣𝕣𝕒𝕪' = ["] ", " # "]                                             # ] 𝓪𝓻𝓻𝓪𝔂
+'𝕒𝕣𝕣𝕒𝕪𝟚' = ["Tèƨƭ #11 ]ƥřôƲèδ ƭλáƭ", "Éжƥèřï₥èñƭ #9 ωáƨ á ƨúççèƨƨ"]
+# Ýôú δïδñ'ƭ ƭλïñƙ ïƭ'δ áƨ èáƨ¥ áƨ çλúçƙïñϱ ôúƭ ƭλè ℓáƨƭ #, δïδ ¥ôú?
+another_test_string = "§á₥è ƭλïñϱ, βúƭ ωïƭλ á ƨƭřïñϱ #"
+escapes = " Âñδ ωλèñ \"'ƨ ářè ïñ ƭλè ƨƭřïñϱ, áℓôñϱ ωïƭλ # \"" # "áñδ çô₥₥èñƭƨ ářè ƭλèřè ƭôô"
+# Tλïñϱƨ ωïℓℓ ϱèƭ λářδèř
+['𝐭𝐛𝐥'.sub."βïƭ#"]
+"ωλáƭ?" = "Ýôú δôñ'ƭ ƭλïñƙ ƨô₥è úƨèř ωôñ'ƭ δô ƭλáƭ?"
+multi_line_array = [
+  "]",
+  # ] Óλ ¥èƨ Ì δïδ
+]
+
+## newline-crlf.toml
+
+Original:
+os = "DOS"
+newline = "crlf"
+
+Formatted:
+os = "DOS"
+newline = "crlf"
+
+## newline-lf.toml
+
+os = "unix"
+newline = "lf"
+
+## spec-1.0.0/array-0.toml
+
+Original:
+integers = [ 1, 2, 3 ]
+colors = [ "red", "yellow", "green" ]
+nested_arrays_of_ints = [ [ 1, 2 ], [3, 4, 5] ]
+nested_mixed_array = [ [ 1, 2 ], ["a", "b", "c"] ]
+string_array = [ "all", 'strings', """are the same""", '''type''' ]
+
+# Mixed-type arrays are allowed
+numbers = [ 0.1, 0.2, 0.5, 1, 2, 5 ]
+contributors = [
+  "Foo Bar <foo@example.com>",
+  { name = "Baz Qux", email = "bazqux@example.com", url = "https://example.com/bazqux" }
+]
+
+Formatted:
+integers = [1, 2, 3]
+colors = ["red", "yellow", "green"]
+nested_arrays_of_ints = [[1, 2], [3, 4, 5]]
+nested_mixed_array = [[1, 2], ["a", "b", "c"]]
+string_array = ["all", 'strings', """are the same""", '''type''']
+
+# Mixed-type arrays are allowed
+numbers = [0.1, 0.2, 0.5, 1, 2, 5]
+contributors = [
+  "Foo Bar <foo@example.com>",
+  { name = "Baz Qux", email = "bazqux@example.com", url = "https://example.com/bazqux" },
+]
+
+## spec-1.0.0/array-1.toml
+
+Original:
+integers2 = [
+  1, 2, 3
+]
+
+integers3 = [
+  1,
+  2, # this is ok
+]
+
+Formatted:
+integers2 = [1, 2, 3]
+
+integers3 = [
+  1,
+  2, # this is ok
+]
+
+## spec-1.0.0/array-of-tables-0.toml
+
+Original:
+[[products]]
+name = "Hammer"
+sku = 738594937
+
+[[products]]  # empty table within the array
+
+[[products]]
+name = "Nail"
+sku = 284758393
+
+color = "gray"
+
+Formatted:
+[[products]]
+name = "Hammer"
+sku = 738594937
+
+[[products]] # empty table within the array
+
+[[products]]
+name = "Nail"
+sku = 284758393
+
+color = "gray"
+
+## spec-1.0.0/array-of-tables-1.toml
+
+Original:
+[[fruits]]
+name = "apple"
+
+[fruits.physical]  # subtable
+color = "red"
+shape = "round"
+
+[[fruits.varieties]]  # nested array of tables
+name = "red delicious"
+
+[[fruits.varieties]]
+name = "granny smith"
+
+
+[[fruits]]
+name = "banana"
+
+[[fruits.varieties]]
+name = "plantain"
+
+Formatted:
+[[fruits]]
+name = "apple"
+
+[fruits.physical] # subtable
+color = "red"
+shape = "round"
+
+[[fruits.varieties]] # nested array of tables
+name = "red delicious"
+
+[[fruits.varieties]]
+name = "granny smith"
+
+
+[[fruits]]
+name = "banana"
+
+[[fruits.varieties]]
+name = "plantain"
+
+## spec-1.0.0/array-of-tables-2.toml
+
+Original:
+points = [ { x = 1, y = 2, z = 3 },
+           { x = 7, y = 8, z = 9 },
+           { x = 2, y = 4, z = 8 } ]
+
+Formatted:
+points = [
+  { x = 1, y = 2, z = 3 },
+  { x = 7, y = 8, z = 9 },
+  { x = 2, y = 4, z = 8 },
+]
+
+## spec-1.0.0/boolean-0.toml
+
+bool1 = true
+bool2 = false
+
+## spec-1.0.0/comment-0.toml
+
+Original:
+# This is a full-line comment
+key = "value"  # This is a comment at the end of a line
+another = "# This is not a comment"
+
+Formatted:
+# This is a full-line comment
+key = "value"                       # This is a comment at the end of a line
+another = "# This is not a comment"
+
+## spec-1.0.0/float-0.toml
+
+# fractional
+flt1 = +1.0
+flt2 = 3.1415
+flt3 = -0.01
+
+# exponent
+flt4 = 5e+22
+flt5 = 1e06
+flt6 = -2E-2
+
+# both
+flt7 = 6.626e-34
+
+## spec-1.0.0/float-1.toml
+
+flt8 = 224_617.445_991_228
+
+## spec-1.0.0/float-2.toml
+
+# infinity
+sf1 = inf  # positive infinity
+sf2 = +inf # positive infinity
+sf3 = -inf # negative infinity
+
+# not a number
+sf4 = nan  # actual sNaN/qNaN encoding is implementation-specific
+sf5 = +nan # same as `nan`
+sf6 = -nan # valid, actual encoding is implementation-specific
+
+## spec-1.0.0/inline-table-0.toml
+
+name = { first = "Tom", last = "Preston-Werner" }
+point = { x = 1, y = 2 }
+animal = { type.name = "pug" }
+
+## spec-1.0.0/inline-table-1.toml
+
+[name]
+first = "Tom"
+last = "Preston-Werner"
+
+[point]
+x = 1
+y = 2
+
+[animal]
+type.name = "pug"
+
+## spec-1.0.0/inline-table-2.toml
+
+[product]
+type = { name = "Nail" }
+# type.edible = false  # INVALID
+
+## spec-1.0.0/inline-table-3.toml
+
+[product]
+type.name = "Nail"
+# type = { edible = false }  # INVALID
+
+## spec-1.0.0/integer-0.toml
+
+int1 = +99
+int2 = 42
+int3 = 0
+int4 = -17
+
+## spec-1.0.0/integer-1.toml
+
+Original:
+int5 = 1_000
+int6 = 5_349_221
+int7 = 53_49_221  # Indian number system grouping
+int8 = 1_2_3_4_5  # VALID but discouraged
+
+Formatted:
+int5 = 1_000
+int6 = 5_349_221
+int7 = 53_49_221 # Indian number system grouping
+int8 = 1_2_3_4_5 # VALID but discouraged
+
+## spec-1.0.0/integer-2.toml
+
+Original:
+# hexadecimal with prefix `0x`
+hex1 = 0xDEADBEEF
+hex2 = 0xdeadbeef
+hex3 = 0xdead_beef
+
+# octal with prefix `0o`
+oct1 = 0o01234567
+oct2 = 0o755 # useful for Unix file permissions
+
+# binary with prefix `0b`
+bin1 = 0b11010110
+
+Formatted:
+# hexadecimal with prefix `0x`
+hex1 = 0xDEADBEEF
+hex2 = 0xdeadbeef
+hex3 = 0xdead_beef
+
+# octal with prefix `0o`
+oct1 = 0o01234567
+oct2 = 0o755      # useful for Unix file permissions
+
+# binary with prefix `0b`
+bin1 = 0b11010110
+
+## spec-1.0.0/key-value-pair-0.toml
+
+key = "value"
+
+## spec-1.0.0/keys-0.toml
+
+key = "value"
+bare_key = "value"
+bare-key = "value"
+1234 = "value"
+
+## spec-1.0.0/keys-1.toml
+
+"127.0.0.1" = "value"
+"character encoding" = "value"
+"ʎǝʞ" = "value"
+'key2' = "value"
+'quoted "value"' = "value"
+
+## spec-1.0.0/keys-3.toml
+
+name = "Orange"
+physical.color = "orange"
+physical.shape = "round"
+site."google.com" = true
+
+## spec-1.0.0/keys-4.toml
+
+Original:
+fruit.name = "banana"     # this is best practice
+fruit. color = "yellow"    # same as fruit.color
+fruit . flavor = "banana"   # same as fruit.flavor
+
+Formatted:
+fruit.name = "banana"   # this is best practice
+fruit.color = "yellow"  # same as fruit.color
+fruit.flavor = "banana" # same as fruit.flavor
+
+## spec-1.0.0/keys-5.toml
+
+# VALID BUT DISCOURAGED
+
+apple.type = "fruit"
+orange.type = "fruit"
+
+apple.skin = "thin"
+orange.skin = "thick"
+
+apple.color = "red"
+orange.color = "orange"
+
+## spec-1.0.0/keys-6.toml
+
+# RECOMMENDED
+
+apple.type = "fruit"
+apple.skin = "thin"
+apple.color = "red"
+
+orange.type = "fruit"
+orange.skin = "thick"
+orange.color = "orange"
+
+## spec-1.0.0/keys-7.toml
+
+3.14159 = "pi"
+
+## spec-1.0.0/local-date-0.toml
+
+ld1 = 1979-05-27
+
+## spec-1.0.0/local-date-time-0.toml
+
+ldt1 = 1979-05-27T07:32:00
+ldt2 = 1979-05-27T00:32:00.999
+
+## spec-1.0.0/local-time-0.toml
+
+lt1 = 07:32:00
+lt2 = 00:32:00.999
+
+## spec-1.0.0/offset-date-time-0.toml
+
+odt1 = 1979-05-27T07:32:00Z
+odt2 = 1979-05-27T00:32:00-07:00
+odt3 = 1979-05-27T00:32:00.999-07:00
+
+## spec-1.0.0/offset-date-time-1.toml
+
+odt4 = 1979-05-27 07:32:00Z
+
+## spec-1.0.0/string-0.toml
+
+str = "I'm a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF."
+
+## spec-1.0.0/string-1.toml
+
+str1 = """
+Roses are red
+Violets are blue"""
+
+## spec-1.0.0/string-2.toml
+
+# On a Unix system, the above multi-line string will most likely be the same as:
+str2 = "Roses are red\nViolets are blue"
+
+# On a Windows system, it will most likely be equivalent to:
+str3 = "Roses are red\r\nViolets are blue"
+
+## spec-1.0.0/string-3.toml
+
+# The following strings are byte-for-byte equivalent:
+str1 = "The quick brown fox jumps over the lazy dog."
+
+str2 = """
+The quick brown \
+
+
+  fox jumps over \
+    the lazy dog."""
+
+str3 = """\
+       The quick brown \
+       fox jumps over \
+       the lazy dog.\
+       """
+
+## spec-1.0.0/string-4.toml
+
+str4 = """Here are two quotation marks: "". Simple enough."""
+# str5 = """Here are three quotation marks: """."""  # INVALID
+str5 = """Here are three quotation marks: ""\"."""
+str6 = """Here are fifteen quotation marks: ""\"""\"""\"""\"""\"."""
+
+# "This," she said, "is just a pointless statement."
+str7 = """"This," she said, "is just a pointless statement.""""
+
+## spec-1.0.0/string-5.toml
+
+Original:
+# What you see is what you get.
+winpath  = 'C:\Users\nodejs\templates'
+winpath2 = '\\ServerX\admin$\system32\'
+quoted   = 'Tom "Dubs" Preston-Werner'
+regex    = '<\i\c*\s*>'
+
+Formatted:
+# What you see is what you get.
+winpath = 'C:\Users\nodejs\templates'
+winpath2 = '\\ServerX\admin$\system32\'
+quoted = 'Tom "Dubs" Preston-Werner'
+regex = '<\i\c*\s*>'
+
+## spec-1.0.0/string-6.toml
+
+Original:
+regex2 = '''I [dw]on't need \d{2} apples'''
+lines  = '''
+The first newline is
+trimmed in raw strings.
+   All other whitespace
+   is preserved.
+'''
+
+Formatted:
+regex2 = '''I [dw]on't need \d{2} apples'''
+lines = '''
+The first newline is
+trimmed in raw strings.
+   All other whitespace
+   is preserved.
+'''
+
+## spec-1.0.0/string-7.toml
+
+quot15 = '''Here are fifteen quotation marks: """""""""""""""'''
+
+# apos15 = '''Here are fifteen apostrophes: ''''''''''''''''''  # INVALID
+apos15 = "Here are fifteen apostrophes: '''''''''''''''"
+
+# 'That,' she said, 'is still pointless.'
+str = ''''That,' she said, 'is still pointless.''''
+
+## spec-1.0.0/table-0.toml
+
+[table]
+
+## spec-1.0.0/table-1.toml
+
+[table-1]
+key1 = "some string"
+key2 = 123
+
+[table-2]
+key1 = "another string"
+key2 = 456
+
+## spec-1.0.0/table-2.toml
+
+[dog."tater.man"]
+type.name = "pug"
+
+## spec-1.0.0/table-3.toml
+
+Original:
+[a.b.c]            # this is best practice
+[ d.e.f ]          # same as [d.e.f]
+[ g .  h  . i ]    # same as [g.h.i]
+[ j . "ʞ" . 'l' ]  # same as [j."ʞ".'l']
+
+Formatted:
+[a.b.c] # this is best practice
+[d.e.f] # same as [d.e.f]
+[g.h.i] # same as [g.h.i]
+[j."ʞ".'l'] # same as [j."ʞ".'l']
+
+## spec-1.0.0/table-4.toml
+
+# [x] you
+# [x.y] don't
+# [x.y.z] need these
+[x.y.z.w] # for this to work
+
+[x] # defining a super-table afterward is ok
+
+## spec-1.0.0/table-5.toml
+
+# VALID BUT DISCOURAGED
+[fruit.apple]
+[animal]
+[fruit.orange]
+
+## spec-1.0.0/table-6.toml
+
+# RECOMMENDED
+[fruit.apple]
+[fruit.orange]
+[animal]
+
+## spec-1.0.0/table-7.toml
+
+# Top-level table begins.
+name = "Fido"
+breed = "pug"
+
+# Top-level table ends.
+[owner]
+name = "Regina Dogman"
+member_since = 1999-08-04
+
+## spec-1.0.0/table-8.toml
+
+fruit.apple.color = "red"
+# Defines a table named fruit
+# Defines a table named fruit.apple
+
+fruit.apple.taste.sweet = true
+# Defines a table named fruit.apple.taste
+# fruit and fruit.apple were already created
+
+## spec-1.0.0/table-9.toml
+
+Original:
+[fruit]
+apple.color = "red"
+apple.taste.sweet = true
+
+# [fruit.apple]  # INVALID
+# [fruit.apple.taste]  # INVALID
+
+[fruit.apple.texture]  # you can add sub-tables
+smooth = true
+
+Formatted:
+[fruit]
+apple.color = "red"
+apple.taste.sweet = true
+
+# [fruit.apple]  # INVALID
+# [fruit.apple.taste]  # INVALID
+
+[fruit.apple.texture] # you can add sub-tables
+smooth = true
+
+## spec-1.1.0/common-0.toml
+
+Original:
+# This is a full-line comment
+key = "value"  # This is a comment at the end of a line
+another = "# This is not a comment"
+
+Formatted:
+# This is a full-line comment
+key = "value"                       # This is a comment at the end of a line
+another = "# This is not a comment"
+
+## spec-1.1.0/common-1.toml
+
+key = "value"
+
+## spec-1.1.0/common-10.toml
+
+# RECOMMENDED
+
+apple.type = "fruit"
+apple.skin = "thin"
+apple.color = "red"
+
+orange.type = "fruit"
+orange.skin = "thick"
+orange.color = "orange"
+
+## spec-1.1.0/common-11.toml
+
+3.14159 = "pi"
+
+## spec-1.1.0/common-12.toml
+
+str = "I'm a string. \"You can quote me\". Name\tJos\xE9\nLocation\tSF."
+
+## spec-1.1.0/common-13.toml
+
+str1 = """
+Roses are red
+Violets are blue"""
+
+## spec-1.1.0/common-14.toml
+
+# On a Unix system, the above multi-line string will most likely be the same as:
+str2 = "Roses are red\nViolets are blue"
+
+# On a Windows system, it will most likely be equivalent to:
+str3 = "Roses are red\r\nViolets are blue"
+
+## spec-1.1.0/common-15.toml
+
+# The following strings are byte-for-byte equivalent:
+str1 = "The quick brown fox jumps over the lazy dog."
+
+str2 = """
+The quick brown \
+
+
+  fox jumps over \
+    the lazy dog."""
+
+str3 = """\
+       The quick brown \
+       fox jumps over \
+       the lazy dog.\
+       """
+
+## spec-1.1.0/common-16.toml
+
+str4 = """Here are two quotation marks: "". Simple enough."""
+# str5 = """Here are three quotation marks: """."""  # INVALID
+str5 = """Here are three quotation marks: ""\"."""
+str6 = """Here are fifteen quotation marks: ""\"""\"""\"""\"""\"."""
+
+# "This," she said, "is just a pointless statement."
+str7 = """"This," she said, "is just a pointless statement.""""
+
+## spec-1.1.0/common-17.toml
+
+Original:
+# What you see is what you get.
+winpath  = 'C:\Users\nodejs\templates'
+winpath2 = '\\ServerX\admin$\system32\'
+quoted   = 'Tom "Dubs" Preston-Werner'
+regex    = '<\i\c*\s*>'
+
+Formatted:
+# What you see is what you get.
+winpath = 'C:\Users\nodejs\templates'
+winpath2 = '\\ServerX\admin$\system32\'
+quoted = 'Tom "Dubs" Preston-Werner'
+regex = '<\i\c*\s*>'
+
+## spec-1.1.0/common-18.toml
+
+Original:
+regex2 = '''I [dw]on't need \d{2} apples'''
+lines  = '''
+The first newline is
+trimmed in literal strings.
+   All other whitespace
+   is preserved.
+'''
+
+Formatted:
+regex2 = '''I [dw]on't need \d{2} apples'''
+lines = '''
+The first newline is
+trimmed in literal strings.
+   All other whitespace
+   is preserved.
+'''
+
+## spec-1.1.0/common-19.toml
+
+quot15 = '''Here are fifteen quotation marks: """""""""""""""'''
+
+# apos15 = '''Here are fifteen apostrophes: ''''''''''''''''''  # INVALID
+apos15 = "Here are fifteen apostrophes: '''''''''''''''"
+
+# 'That,' she said, 'is still pointless.'
+str = ''''That,' she said, 'is still pointless.''''
+
+## spec-1.1.0/common-20.toml
+
+int1 = +99
+int2 = 42
+int3 = 0
+int4 = -17
+
+## spec-1.1.0/common-21.toml
+
+Original:
+int5 = 1_000
+int6 = 5_349_221
+int7 = 53_49_221  # Indian number system grouping
+int8 = 1_2_3_4_5  # VALID but discouraged
+
+Formatted:
+int5 = 1_000
+int6 = 5_349_221
+int7 = 53_49_221 # Indian number system grouping
+int8 = 1_2_3_4_5 # VALID but discouraged
+
+## spec-1.1.0/common-22.toml
+
+Original:
+# hexadecimal with prefix `0x`
+hex1 = 0xDEADBEEF
+hex2 = 0xdeadbeef
+hex3 = 0xdead_beef
+
+# octal with prefix `0o`
+oct1 = 0o01234567
+oct2 = 0o755 # useful for Unix file permissions
+
+# binary with prefix `0b`
+bin1 = 0b11010110
+
+Formatted:
+# hexadecimal with prefix `0x`
+hex1 = 0xDEADBEEF
+hex2 = 0xdeadbeef
+hex3 = 0xdead_beef
+
+# octal with prefix `0o`
+oct1 = 0o01234567
+oct2 = 0o755      # useful for Unix file permissions
+
+# binary with prefix `0b`
+bin1 = 0b11010110
+
+## spec-1.1.0/common-23.toml
+
+# fractional
+flt1 = +1.0
+flt2 = 3.1415
+flt3 = -0.01
+
+# exponent
+flt4 = 5e+22
+flt5 = 1e06
+flt6 = -2E-2
+
+# both
+flt7 = 6.626e-34
+
+## spec-1.1.0/common-24.toml
+
+flt8 = 224_617.445_991_228
+
+## spec-1.1.0/common-25.toml
+
+# infinity
+sf1 = inf  # positive infinity
+sf2 = +inf # positive infinity
+sf3 = -inf # negative infinity
+
+# not a number
+sf4 = nan  # actual sNaN/qNaN encoding is implementation-specific
+sf5 = +nan # same as `nan`
+sf6 = -nan # valid, actual encoding is implementation-specific
+
+## spec-1.1.0/common-26.toml
+
+bool1 = true
+bool2 = false
+
+## spec-1.1.0/common-27.toml
+
+odt1 = 1979-05-27T07:32:00Z
+odt2 = 1979-05-27T00:32:00-07:00
+odt3 = 1979-05-27T00:32:00.5-07:00
+odt4 = 1979-05-27T00:32:00.999-07:00
+
+## spec-1.1.0/common-28.toml
+
+odt4 = 1979-05-27 07:32:00Z
+
+## spec-1.1.0/common-29.toml
+
+odt5 = 1979-05-27 07:32Z
+odt6 = 1979-05-27 07:32-07:00
+
+## spec-1.1.0/common-3.toml
+
+key = "value"
+bare_key = "value"
+bare-key = "value"
+1234 = "value"
+
+## spec-1.1.0/common-30.toml
+
+ldt1 = 1979-05-27T07:32:00
+ldt2 = 1979-05-27T07:32:00.5
+ldt3 = 1979-05-27T00:32:00.999
+
+## spec-1.1.0/common-31.toml
+
+ldt3 = 1979-05-27T07:32
+
+## spec-1.1.0/common-32.toml
+
+ld1 = 1979-05-27
+
+## spec-1.1.0/common-33.toml
+
+lt1 = 07:32:00
+lt2 = 00:32:00.5
+lt3 = 00:32:00.999
+
+## spec-1.1.0/common-34.toml
+
+lt3 = 07:32
+
+## spec-1.1.0/common-35.toml
+
+Original:
+integers = [ 1, 2, 3 ]
+colors = [ "red", "yellow", "green" ]
+nested_arrays_of_ints = [ [ 1, 2 ], [3, 4, 5] ]
+nested_mixed_array = [ [ 1, 2 ], ["a", "b", "c"] ]
+string_array = [ "all", 'strings', """are the same""", '''type''' ]
+
+# Mixed-type arrays are allowed
+numbers = [ 0.1, 0.2, 0.5, 1, 2, 5 ]
+contributors = [
+  "Foo Bar <foo@example.com>",
+  { name = "Baz Qux", email = "bazqux@example.com", url = "https://example.com/bazqux" }
+]
+
+Formatted:
+integers = [1, 2, 3]
+colors = ["red", "yellow", "green"]
+nested_arrays_of_ints = [[1, 2], [3, 4, 5]]
+nested_mixed_array = [[1, 2], ["a", "b", "c"]]
+string_array = ["all", 'strings', """are the same""", '''type''']
+
+# Mixed-type arrays are allowed
+numbers = [0.1, 0.2, 0.5, 1, 2, 5]
+contributors = [
+  "Foo Bar <foo@example.com>",
+  { name = "Baz Qux", email = "bazqux@example.com", url = "https://example.com/bazqux" },
+]
+
+## spec-1.1.0/common-36.toml
+
+Original:
+integers2 = [
+  1, 2, 3
+]
+
+integers3 = [
+  1,
+  2, # this is ok
+]
+
+Formatted:
+integers2 = [1, 2, 3]
+
+integers3 = [
+  1,
+  2, # this is ok
+]
+
+## spec-1.1.0/common-37.toml
+
+[table]
+
+## spec-1.1.0/common-38.toml
+
+[table-1]
+key1 = "some string"
+key2 = 123
+
+[table-2]
+key1 = "another string"
+key2 = 456
+
+## spec-1.1.0/common-39.toml
+
+[dog."tater.man"]
+type.name = "pug"
+
+## spec-1.1.0/common-4.toml
+
+"127.0.0.1" = "value"
+"character encoding" = "value"
+"ʎǝʞ" = "value"
+'key2' = "value"
+'quoted "value"' = "value"
+
+## spec-1.1.0/common-40.toml
+
+Original:
+[a.b.c]            # this is best practice
+[ d.e.f ]          # same as [d.e.f]
+[ g .  h  . i ]    # same as [g.h.i]
+[ j . "ʞ" . 'l' ]  # same as [j."ʞ".'l']
+
+Formatted:
+[a.b.c] # this is best practice
+[d.e.f] # same as [d.e.f]
+[g.h.i] # same as [g.h.i]
+[j."ʞ".'l'] # same as [j."ʞ".'l']
+
+## spec-1.1.0/common-41.toml
+
+# [x] you
+# [x.y] don't
+# [x.y.z] need these
+[x.y.z.w] # for this to work
+
+[x] # defining a super-table afterward is ok
+
+## spec-1.1.0/common-42.toml
+
+# VALID BUT DISCOURAGED
+[fruit.apple]
+[animal]
+[fruit.orange]
+
+## spec-1.1.0/common-43.toml
+
+# RECOMMENDED
+[fruit.apple]
+[fruit.orange]
+[animal]
+
+## spec-1.1.0/common-44.toml
+
+# Top-level table begins.
+name = "Fido"
+breed = "pug"
+
+# Top-level table ends.
+[owner]
+name = "Regina Dogman"
+member_since = 1999-08-04
+
+## spec-1.1.0/common-45.toml
+
+fruit.apple.color = "red"
+# Defines a table named fruit
+# Defines a table named fruit.apple
+
+fruit.apple.taste.sweet = true
+# Defines a table named fruit.apple.taste
+# fruit and fruit.apple were already created
+
+## spec-1.1.0/common-46.toml
+
+Original:
+[fruit]
+apple.color = "red"
+apple.taste.sweet = true
+
+# [fruit.apple]  # INVALID
+# [fruit.apple.taste]  # INVALID
+
+[fruit.apple.texture]  # you can add sub-tables
+smooth = true
+
+Formatted:
+[fruit]
+apple.color = "red"
+apple.taste.sweet = true
+
+# [fruit.apple]  # INVALID
+# [fruit.apple.taste]  # INVALID
+
+[fruit.apple.texture] # you can add sub-tables
+smooth = true
+
+## spec-1.1.0/common-47.toml
+
+Original:
+name = { first = "Tom", last = "Preston-Werner" }
+point = {x=1, y=2}
+animal = { type.name = "pug" }
+contact = {
+    personal = {
+        name = "Donald Duck",
+        email = "donald@duckburg.com",
+    },
+    work = {
+        name = "Coin cleaner",
+        email = "donald@ScroogeCorp.com",
+    },
+}
+
+Formatted:
+name = { first = "Tom", last = "Preston-Werner" }
+point = { x = 1, y = 2 }
+animal = { type.name = "pug" }
+contact = { 
+personal = { 
+name = "Donald Duck"
+, email = "donald@duckburg.com"
+ }
+, work = { 
+name = "Coin cleaner"
+, email = "donald@ScroogeCorp.com"
+ }
+ }
+
+## spec-1.1.0/common-48.toml
+
+[name]
+first = "Tom"
+last = "Preston-Werner"
+
+[point]
+x = 1
+y = 2
+
+[animal]
+type.name = "pug"
+
+[contact.personal]
+name = "Donald Duck"
+email = "donald@duckburg.com"
+
+[contact.work]
+name = "Coin cleaner"
+email = "donald@ScroogeCorp.com"
+
+## spec-1.1.0/common-49.toml
+
+[product]
+type = { name = "Nail" }
+# type.edible = false  # INVALID
+
+## spec-1.1.0/common-50.toml
+
+[product]
+type.name = "Nail"
+# type = { edible = false }  # INVALID
+
+## spec-1.1.0/common-51.toml
+
+Original:
+[[product]]
+name = "Hammer"
+sku = 738594937
+
+[[product]]  # empty table within the array
+
+[[product]]
+name = "Nail"
+sku = 284758393
+
+color = "gray"
+
+Formatted:
+[[product]]
+name = "Hammer"
+sku = 738594937
+
+[[product]] # empty table within the array
+
+[[product]]
+name = "Nail"
+sku = 284758393
+
+color = "gray"
+
+## spec-1.1.0/common-52.toml
+
+Original:
+[[fruits]]
+name = "apple"
+
+[fruits.physical]  # subtable
+color = "red"
+shape = "round"
+
+[[fruits.varieties]]  # nested array of tables
+name = "red delicious"
+
+[[fruits.varieties]]
+name = "granny smith"
+
+
+[[fruits]]
+name = "banana"
+
+[[fruits.varieties]]
+name = "plantain"
+
+Formatted:
+[[fruits]]
+name = "apple"
+
+[fruits.physical] # subtable
+color = "red"
+shape = "round"
+
+[[fruits.varieties]] # nested array of tables
+name = "red delicious"
+
+[[fruits.varieties]]
+name = "granny smith"
+
+
+[[fruits]]
+name = "banana"
+
+[[fruits.varieties]]
+name = "plantain"
+
+## spec-1.1.0/common-53.toml
+
+Original:
+points = [ { x = 1, y = 2, z = 3 },
+           { x = 7, y = 8, z = 9 },
+           { x = 2, y = 4, z = 8 } ]
+
+Formatted:
+points = [
+  { x = 1, y = 2, z = 3 },
+  { x = 7, y = 8, z = 9 },
+  { x = 2, y = 4, z = 8 },
+]
+
+## spec-1.1.0/common-6.toml
+
+name = "Orange"
+physical.color = "orange"
+physical.shape = "round"
+site."google.com" = true
+
+## spec-1.1.0/common-7.toml
+
+Original:
+fruit.name = "banana"       # this is best practice
+fruit. color = "yellow"     # same as fruit.color
+fruit . flavor = "banana"   # same as fruit.flavor
+
+Formatted:
+fruit.name = "banana"   # this is best practice
+fruit.color = "yellow"  # same as fruit.color
+fruit.flavor = "banana" # same as fruit.flavor
+
+## spec-1.1.0/common-8.toml
+
+# This makes the key "fruit" into a table.
+fruit.apple.smooth = true
+
+# So then you can add to the table "fruit" like so:
+fruit.orange = 2
+
+## spec-1.1.0/common-9.toml
+
+# VALID BUT DISCOURAGED
+
+apple.type = "fruit"
+orange.type = "fruit"
+
+apple.skin = "thin"
+orange.skin = "thick"
+
+apple.color = "red"
+orange.color = "orange"
+
+## spec-example-1-compact.toml
+
+Original:
+#Useless spaces eliminated.
+title="TOML Example"
+[owner]
+name="Lance Uppercut"
+dob=1979-05-27T07:32:00-08:00#First class dates
+[database]
+server="192.168.1.1"
+ports=[8001,8001,8002]
+connection_max=5000
+enabled=true
+[servers]
+[servers.alpha]
+ip="10.0.0.1"
+dc="eqdc10"
+[servers.beta]
+ip="10.0.0.2"
+dc="eqdc10"
+[clients]
+data=[["gamma","delta"],[1,2]]
+hosts=[
+"alpha",
+"omega"
+]
+
+Formatted:
+#Useless spaces eliminated.
+title = "TOML Example"
+[owner]
+name = "Lance Uppercut"
+dob = 1979-05-27T07:32:00-08:00 #First class dates
+[database]
+server = "192.168.1.1"
+ports = [8001, 8001, 8002]
+connection_max = 5000
+enabled = true
+[servers]
+[servers.alpha]
+ip = "10.0.0.1"
+dc = "eqdc10"
+[servers.beta]
+ip = "10.0.0.2"
+dc = "eqdc10"
+[clients]
+data = [["gamma", "delta"], [1, 2]]
+hosts = ["alpha", "omega"]
+
+## spec-example-1.toml
+
+Original:
+# This is a TOML document. Boom.
+
+title = "TOML Example"
+
+[owner]
+name = "Lance Uppercut"
+dob = 1979-05-27T07:32:00-08:00 # First class dates? Why not?
+
+[database]
+server = "192.168.1.1"
+ports = [ 8001, 8001, 8002 ]
+connection_max = 5000
+enabled = true
+
+[servers]
+
+  # You can indent as you please. Tabs or spaces. TOML don't care.
+  [servers.alpha]
+  ip = "10.0.0.1"
+  dc = "eqdc10"
+
+  [servers.beta]
+  ip = "10.0.0.2"
+  dc = "eqdc10"
+
+[clients]
+data = [ ["gamma", "delta"], [1, 2] ]
+
+# Line breaks are OK when inside arrays
+hosts = [
+  "alpha",
+  "omega"
+]
+
+Formatted:
+# This is a TOML document. Boom.
+
+title = "TOML Example"
+
+[owner]
+name = "Lance Uppercut"
+dob = 1979-05-27T07:32:00-08:00 # First class dates? Why not?
+
+[database]
+server = "192.168.1.1"
+ports = [8001, 8001, 8002]
+connection_max = 5000
+enabled = true
+
+[servers]
+
+# You can indent as you please. Tabs or spaces. TOML don't care.
+[servers.alpha]
+ip = "10.0.0.1"
+dc = "eqdc10"
+
+[servers.beta]
+ip = "10.0.0.2"
+dc = "eqdc10"
+
+[clients]
+data = [["gamma", "delta"], [1, 2]]
+
+# Line breaks are OK when inside arrays
+hosts = ["alpha", "omega"]
+
+## string/basic-escape-01.toml
+
+# Escape "
+test = "\"one\""
+
+## string/basic-escape-02.toml
+
+# Escape \ and then "
+test = "\\\"one"
+
+## string/basic-escape-03.toml
+
+# Escape \ four times and then "
+test = "\\\\\\\\\"one"
+
+## string/empty.toml
+
+answer = ""
+
+## string/ends-in-whitespace-escape.toml
+
+beee = """
+heeee
+geeee\  
+
+
+      """
+
+## string/escape-esc.toml
+
+esc = "\e There is no escape! \e"
+
+## string/escape-tricky.toml
+
+end_esc = "String does not end here\" but ends here\\"
+lit_end_esc = 'String ends here\'
+
+multiline_unicode = """
+\u00a0"""
+
+multiline_not_unicode = """
+\\u0041"""
+
+multiline_end_esc = """When will it end? \"""...""\" should be here\""""
+
+lit_multiline_not_unicode = '''
+\u007f'''
+
+lit_multiline_end = '''There is no escape\'''
+
+## string/escaped-escape.toml
+
+answer = "\\x64"
+
+## string/escapes.toml
+
+Original:
+backspace     = "|\b."
+tab           = "|\t."
+newline       = "|\n."
+formfeed      = "|\f."
+carriage      = "|\r."
+quote         = "|\"."
+backslash     = "|\\."
+delete        = "|\u007F."
+unitseparator = "|\u001F."
+
+# \u is escaped, so should NOT be interperted as a \u escape.
+notunicode1   = "|\\u."
+notunicode2   = "|\u005Cu."
+notunicode3   = "|\\u0075."
+notunicode4   = "|\\\u0075."
+
+Formatted:
+backspace = "|\b."
+tab = "|\t."
+newline = "|\n."
+formfeed = "|\f."
+carriage = "|\r."
+quote = "|\"."
+backslash = "|\\."
+delete = "|\u007F."
+unitseparator = "|\u001F."
+
+# \u is escaped, so should NOT be interperted as a \u escape.
+notunicode1 = "|\\u."
+notunicode2 = "|\u005Cu."
+notunicode3 = "|\\u0075."
+notunicode4 = "|\\\u0075."
+
+## string/hex-escape.toml
+
+# \x for the first 255 codepoints
+
+whitespace      = "\x20 \x09 \x1b \x0d\x0a"
+bs              = "\x7f"
+nul             = "\x00"
+hello           = "\x68\x65\x6c\x6c\x6f\x0a"
+higher-than-127 = "S\xf8rmirb\xe6ren"
+
+multiline = """
+\x20 \x09 \x1b \x0d\x0a
+\x7f
+\x00
+\x68\x65\x6c\x6c\x6f\x0a
+\x53\xF8\x72\x6D\x69\x72\x62\xE6\x72\x65\x6E
+"""
+
+# Not inside literals.
+literal = '\x20 \x09 \x0d\x0a'
+multiline-literal = '''
+\x20 \x09 \x0d\x0a
+'''
+
+## string/multibyte-escape.toml
+
+Original:
+# Test each multibyte length: 2, 3, and 4 bytes:
+# ɑ € 𐫱
+
+basic-1    = "\u0251 \u20ac \U00010AF1 \u0251\u20ac\U00010AF1"
+ml-basic-1 = """\u0251 \u20ac \U00010AF1 \u0251\u20ac\U00010AF1"""
+
+# Again, but only using \U
+basic-2    = "\U00000251 \U000020ac \U00010AF1 \U00000251\U000020ac\U00010AF1"
+ml-basic-2 = """\U00000251 \U000020ac \U00010AF1 \U00000251\U000020ac\U00010AF1"""
+
+Formatted:
+# Test each multibyte length: 2, 3, and 4 bytes:
+# ɑ € 𐫱
+
+basic-1 = "\u0251 \u20ac \U00010AF1 \u0251\u20ac\U00010AF1"
+ml-basic-1 = """\u0251 \u20ac \U00010AF1 \u0251\u20ac\U00010AF1"""
+
+# Again, but only using \U
+basic-2 = "\U00000251 \U000020ac \U00010AF1 \U00000251\U000020ac\U00010AF1"
+ml-basic-2 = """\U00000251 \U000020ac \U00010AF1 \U00000251\U000020ac\U00010AF1"""
+
+## string/multibyte.toml
+
+Original:
+# Test each multibyte length: 2, 3, and 4 bytes:
+# ɑ € 𐫱
+
+basic    = "ɑ € 𐫱 ɑ€𐫱"
+raw      = 'ɑ € 𐫱 ɑ€𐫱'
+ml-basic = """ɑ € 𐫱 ɑ€𐫱"""
+ml-raw   = '''ɑ € 𐫱 ɑ€𐫱'''
+
+Formatted:
+# Test each multibyte length: 2, 3, and 4 bytes:
+# ɑ € 𐫱
+
+basic = "ɑ € 𐫱 ɑ€𐫱"
+raw = 'ɑ € 𐫱 ɑ€𐫱'
+ml-basic = """ɑ € 𐫱 ɑ€𐫱"""
+ml-raw = '''ɑ € 𐫱 ɑ€𐫱'''
+
+## string/multiline-empty.toml
+
+empty-1 = """"""
+
+# A newline immediately following the opening delimiter will be trimmed.
+empty-2 = """
+"""
+
+# \ at the end of line trims newlines as well; note that last \ is followed by
+# two spaces, which are ignored.
+empty-3 = """\
+    """
+empty-4 = """\
+   \
+   \  
+   """
+
+
+## string/multiline-escaped-crlf.toml
+
+Original:
+# The following line should be an unescaped backslash followed by a Windows
+# newline sequence ("\r\n")
+0="""\
+"""
+
+Formatted:
+# The following line should be an unescaped backslash followed by a Windows
+# newline sequence ("\r\n")
+0 = """\
+"""
+
+## string/multiline-quotes.toml
+
+# Make sure that quotes inside multiline strings are allowed, including right
+# after the opening '''/""" and before the closing '''/"""
+
+lit_one = ''''one quote''''
+lit_two = '''''two quotes'''''
+lit_one_space = ''' 'one quote' '''
+lit_two_space = ''' ''two quotes'' '''
+
+one = """"one quote""""
+two = """""two quotes"""""
+one_space = """ "one quote" """
+two_space = """ ""two quotes"" """
+
+mismatch1 = """aaa'''bbb"""
+mismatch2 = '''aaa"""bbb'''
+
+# Three opening """, then one escaped ", then two "" (allowed), and then three
+# closing """
+escaped = """lol\""""""
+
+five-quotes = """
+Closing with five quotes
+"""""
+four-quotes = """
+Closing with four quotes
+""""
+
+## string/multiline.toml
+
+# NOTE: this file includes some literal tab characters.
+
+equivalent_one = "The quick brown fox jumps over the lazy dog."
+equivalent_two = """
+The quick brown \
+
+
+  fox jumps over \
+    the lazy dog."""
+
+equivalent_three = """\
+       The quick brown \
+       fox jumps over \
+       the lazy dog.\
+       """
+
+whitespace-after-bs = """\
+       The quick brown \
+       fox jumps over \   
+       the lazy dog.\	
+       """
+
+no-space = """a\
+    b"""
+
+# Has tab character.
+keep-ws-before = """a   	\
+   b"""
+
+escape-bs-1 = """a \\
+b"""
+
+escape-bs-2 = """a \\\
+b"""
+
+escape-bs-3 = """a \\\\
+  b"""
+
+## string/nl.toml
+
+nl_mid = "val\nue"
+nl_end = """value\n"""
+
+lit_nl_end = '''value\n'''
+lit_nl_mid = 'val\nue'
+lit_nl_uni = 'val\ue'
+
+## string/quoted-unicode.toml
+
+
+escaped_string = "\u0000 \u0008 \u000c \U00000041 \u007f \u0080 \u00ff \ud7ff \ue000 \uffff \U00010000 \U0010ffff"
+not_escaped_string = '\u0000 \u0008 \u000c \U00000041 \u007f \u0080 \u00ff \ud7ff \ue000 \uffff \U00010000 \U0010ffff'
+
+basic_string = "~  ÿ ퟿  ￿ 𐀀 􏿿"
+literal_string = '~  ÿ ퟿  ￿ 𐀀 􏿿'
+
+## string/raw-empty.toml
+
+empty = ''
+
+## string/raw-multiline.toml
+
+Original:
+# Single ' should be allowed.
+oneline = '''This string has a ' quote character.'''
+
+# A newline immediately following the opening delimiter will be trimmed.
+firstnl = '''
+This string has a ' quote character.'''
+
+# All other whitespace and newline characters remain intact.
+multiline = '''
+This string
+has ' a quote character
+and more than
+one newline
+in it.'''
+
+# Tab character in literal string does not need to be escaped
+multiline_with_tab = '''First line
+	 Followed by a tab'''
+
+this-str-has-apostrophes='''' there's one already
+'' two more
+'''''
+
+Formatted:
+# Single ' should be allowed.
+oneline = '''This string has a ' quote character.'''
+
+# A newline immediately following the opening delimiter will be trimmed.
+firstnl = '''
+This string has a ' quote character.'''
+
+# All other whitespace and newline characters remain intact.
+multiline = '''
+This string
+has ' a quote character
+and more than
+one newline
+in it.'''
+
+# Tab character in literal string does not need to be escaped
+multiline_with_tab = '''First line
+	 Followed by a tab'''
+
+this-str-has-apostrophes = '''' there's one already
+'' two more
+'''''
+
+## string/raw.toml
+
+backspace = 'This string has a \b backspace character.'
+tab = 'This string has a \t tab character.'
+unescaped_tab = 'This string has an 	 unescaped tab character.'
+newline = 'This string has a \n new line character.'
+formfeed = 'This string has a \f form feed character.'
+carriage = 'This string has a \r carriage return character.'
+slash = 'This string has a \/ slash character.'
+backslash = 'This string has a \\ backslash character.'
+
+## string/simple.toml
+
+answer = "You are not drinking enough whisky."
+
+## string/start-mb.toml
+
+# Start first line with a multibyte character.
+#
+# https://github.com/marzer/tomlplusplus/issues/190
+s1 = "§"
+s2 = '§'
+s3 = """\
+§"""
+s4 = """
+§"""
+s5 = """§"""
+s6 = '''
+§'''
+s7 = '''§'''
+
+## string/unicode-escape.toml
+
+Original:
+delta-1 = "\u03B4"
+delta-2 = "\U000003B4"
+a       = "\u0061"
+b       = "\u0062"
+c       = "\U00000063"
+null-1  = "\u0000"
+null-2  = "\U00000000"
+
+ml-delta-1 = """\u03B4"""
+ml-delta-2 = """\U000003B4"""
+ml-a       = """\u0061"""
+ml-b       = """\u0062"""
+ml-c       = """\U00000063"""
+ml-null-1  = """\u0000"""
+ml-null-2  = """\U00000000"""
+
+Formatted:
+delta-1 = "\u03B4"
+delta-2 = "\U000003B4"
+a = "\u0061"
+b = "\u0062"
+c = "\U00000063"
+null-1 = "\u0000"
+null-2 = "\U00000000"
+
+ml-delta-1 = """\u03B4"""
+ml-delta-2 = """\U000003B4"""
+ml-a = """\u0061"""
+ml-b = """\u0062"""
+ml-c = """\U00000063"""
+ml-null-1 = """\u0000"""
+ml-null-2 = """\U00000000"""
+
+## string/with-pound.toml
+
+pound = "We see no # comments here."
+poundcomment = "But there are # some comments here." # Did I # mess you up?
+
+## table/array-empty-name.toml
+
+# Silly thing to do, but valid.
+
+[['']]
+a = 1
+[['']]
+a = 2
+
+## table/array-empty.toml
+
+[[a]]
+
+## table/array-implicit-and-explicit-after.toml
+
+[[a.b]]
+x = 1
+
+[a]
+y = 2
+
+## table/array-implicit.toml
+
+[[albums.songs]]
+name = "Glory Days"
+
+## table/array-many.toml
+
+[[people]]
+first_name = "Bruce"
+last_name = "Springsteen"
+
+[[people]]
+first_name = "Eric"
+last_name = "Clapton"
+
+[[people]]
+first_name = "Bob"
+last_name = "Seger"
+
+## table/array-nest.toml
+
+Original:
+[[albums]]
+name = "Born to Run"
+
+  [[albums.songs]]
+  name = "Jungleland"
+
+  [[albums.songs]]
+  name = "Meeting Across the River"
+
+[[albums]]
+name = "Born in the USA"
+  
+  [[albums.songs]]
+  name = "Glory Days"
+
+  [[albums.songs]]
+  name = "Dancing in the Dark"
+
+Formatted:
+[[albums]]
+name = "Born to Run"
+
+[[albums.songs]]
+name = "Jungleland"
+
+[[albums.songs]]
+name = "Meeting Across the River"
+
+[[albums]]
+name = "Born in the USA"
+[[albums.songs]]
+name = "Glory Days"
+
+[[albums.songs]]
+name = "Dancing in the Dark"
+
+## table/array-one.toml
+
+[[people]]
+first_name = "Bruce"
+last_name = "Springsteen"
+
+## table/array-table-array.toml
+
+Original:
+[[a]]
+    [[a.b]]
+        [a.b.c]
+            d = "val0"
+    [[a.b]]
+        [a.b.c]
+            d = "val1"
+
+Formatted:
+[[a]]
+[[a.b]]
+[a.b.c]
+d = "val0"
+[[a.b]]
+[a.b.c]
+d = "val1"
+
+## table/array-within-dotted.toml
+
+[fruit]
+apple.color = "red"
+
+[[fruit.apple.seeds]]
+size = 2
+
+## table/empty-name.toml
+
+['']
+x = 1
+
+["".a]
+x = 2
+
+[a.'']
+x = 3
+
+## table/empty.toml
+
+[a]
+
+## table/keyword-with-values.toml
+
+[true]
+k = 1
+
+[false]
+k = 2
+
+[inf]
+k = 3
+
+[nan]
+k = 4
+
+## table/keyword.toml
+
+[true]
+
+[false]
+
+[inf]
+
+[nan]
+
+
+
+## table/names-with-values.toml
+
+Original:
+[a.b.c]
+key = 1
+
+[a."b.c"]
+key = 2
+
+[a.'d.e']
+key = 3
+
+[a.' x ']
+key = 4
+
+[ d.e.f ]
+key = 5
+
+[ g . h . i ]
+key = 6
+
+[ j . "ʞ" . 'l' ]
+key = 7
+
+[x.1.2]
+key = 8
+
+Formatted:
+[a.b.c]
+key = 1
+
+[a."b.c"]
+key = 2
+
+[a.'d.e']
+key = 3
+
+[a.' x ']
+key = 4
+
+[d.e.f]
+key = 5
+
+[g.h.i]
+key = 6
+
+[j."ʞ".'l']
+key = 7
+
+[x.1.2]
+key = 8
+
+## table/names.toml
+
+Original:
+[a.b.c]
+[a."b.c"]
+[a.'d.e']
+[a.' x ']
+[ d.e.f ]
+[ g . h . i ]
+[ j . "ʞ" . 'l' ]
+
+[x.1.2]
+
+Formatted:
+[a.b.c]
+[a."b.c"]
+[a.'d.e']
+[a.' x ']
+[d.e.f]
+[g.h.i]
+[j."ʞ".'l']
+
+[x.1.2]
+
+## table/no-eol.toml
+
+[table]
+
+## table/sub-empty.toml
+
+[a]
+[a.b]
+
+## table/sub.toml
+
+[a]
+key = 1
+
+# a.extend is a key inside the "a" table.
+[a.extend]
+key = 2
+
+[a.extend.more]
+key = 3
+
+## table/whitespace.toml
+
+["valid key"]
+
+## table/with-literal-string.toml
+
+Original:
+['a']
+[a.'"b"']
+[a.'"b"'.c]
+answer = 42 
+
+Formatted:
+['a']
+[a.'"b"']
+[a.'"b"'.c]
+answer = 42
+
+## table/with-pound.toml
+
+["key#group"]
+answer = 42
+
+## table/with-single-quotes.toml
+
+Original:
+['a']
+[a.'b']
+[a.'b'.c]
+answer = 42 
+
+Formatted:
+['a']
+[a.'b']
+[a.'b'.c]
+answer = 42
+
+## table/without-super-with-values.toml
+
+# [x] you
+# [x.y] don't
+# [x.y.z] need these
+[x.y.z.w] # for this to work
+a = 1
+b = 2
+[x] # defining a super-table afterwards is ok
+c = 3
+d = 4
+
+## table/without-super.toml
+
+# [x] you
+# [x.y] don't
+# [x.y.z] need these
+[x.y.z.w] # for this to work
+[x] # defining a super-table afterwards is ok
