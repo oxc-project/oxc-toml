@@ -132,7 +132,7 @@ impl Default for Options {
             compact_arrays: true,
             compact_inline_tables: false,
             compact_entries: false,
-            column_width: 80,
+            column_width: 100,
             indent_tables: false,
             indent_entries: false,
             inline_table_expand: true,
