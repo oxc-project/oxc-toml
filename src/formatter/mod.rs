@@ -124,8 +124,8 @@ impl Default for Options {
     fn default() -> Self {
         Options {
             align_entries: false,
-            align_comments: true,
-            align_single_comments: true,
+            align_comments: false,
+            align_single_comments: false,
             array_trailing_comma: true,
             array_auto_expand: true,
             array_auto_collapse: true,

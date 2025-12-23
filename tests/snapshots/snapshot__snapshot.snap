@@ -242,9 +242,9 @@ true=true#true
 false=false#false
 
 Formatted:
-inf = inf     #infinity
-nan = nan     #not a number
-true = true   #true
+inf = inf #infinity
+nan = nan #not a number
+true = true #true
 false = false #false
 
 ## comment/at-eof.toml
@@ -323,7 +323,7 @@ more = [ # Comment
 
 # Make sure the space between the datetime and "#" isn't lexed.
 dt = 1979-05-27T07:32:12-07:00 # c
-d = 1979-05-27                 # Comment
+d = 1979-05-27 # Comment
 
 [[aot]] # Comment
 k = 98 # Comment
@@ -380,7 +380,7 @@ tbl1 = { "#" = '}#'}#}}
 Formatted:
 [section] #attached comment
 #[notsection]
-one = "11"  #cmt
+one = "11" #cmt
 two = "22#"
 three = '#'
 
@@ -388,11 +388,11 @@ four = """# no comment
 # nor this
 #also not comment""" #is_comment
 
-five = 5.5  #66
-six = 6     #7
+five = 5.5 #66
+six = 6 #7
 8 = "eight"
 #nine = 99
-ten = 10e2      #1
+ten = 10e2 #1
 eleven = 1.11e1 #23
 
 ["hash#tag"]
@@ -703,7 +703,7 @@ empty_in_array = [{ not_empty = 1 }, {}]
 empty_in_array2 = [{}, { not_empty = 1 }]
 many_empty = [{}, {}, {}]
 nested_empty = { "empty" = {} }
-with_cmt = {}                             #nothing here
+with_cmt = {} #nothing here
 
 ## inline-table/end-in-bool.toml
 
@@ -1476,7 +1476,7 @@ Formatted:
 ['𝐭𝐛𝐥']
 string = "𝓼𝓽𝓻𝓲𝓷𝓰 - #" # " 𝓼𝓽𝓻𝓲𝓷𝓰
 ['𝐭𝐛𝐥'.sub]
-'𝕒𝕣𝕣𝕒𝕪' = ["] ", " # "]                                             # ] 𝓪𝓻𝓻𝓪𝔂
+'𝕒𝕣𝕣𝕒𝕪' = ["] ", " # "] # ] 𝓪𝓻𝓻𝓪𝔂
 '𝕒𝕣𝕣𝕒𝕪𝟚' = ["Tèƨƭ #11 ]ƥřôƲèδ ƭλáƭ", "Éжƥèřï₥èñƭ #9 ωáƨ á ƨúççèƨƨ"]
 # Ýôú δïδñ'ƭ ƭλïñƙ ïƭ'δ áƨ èáƨ¥ áƨ çλúçƙïñϱ ôúƭ ƭλè ℓáƨƭ #, δïδ ¥ôú?
 another_test_string = "§á₥è ƭλïñϱ, βúƭ ωïƭλ á ƨƭřïñϱ #"
@@ -1654,7 +1654,7 @@ another = "# This is not a comment"
 
 Formatted:
 # This is a full-line comment
-key = "value"                       # This is a comment at the end of a line
+key = "value" # This is a comment at the end of a line
 another = "# This is not a comment"
 
 ## spec-1.0.0/float-0.toml
@@ -1678,6 +1678,7 @@ flt8 = 224_617.445_991_228
 
 ## spec-1.0.0/float-2.toml
 
+Original:
 # infinity
 sf1 = inf  # positive infinity
 sf2 = +inf # positive infinity
@@ -1685,6 +1686,17 @@ sf3 = -inf # negative infinity
 
 # not a number
 sf4 = nan  # actual sNaN/qNaN encoding is implementation-specific
+sf5 = +nan # same as `nan`
+sf6 = -nan # valid, actual encoding is implementation-specific
+
+Formatted:
+# infinity
+sf1 = inf # positive infinity
+sf2 = +inf # positive infinity
+sf3 = -inf # negative infinity
+
+# not a number
+sf4 = nan # actual sNaN/qNaN encoding is implementation-specific
 sf5 = +nan # same as `nan`
 sf6 = -nan # valid, actual encoding is implementation-specific
 
@@ -1742,7 +1754,6 @@ int8 = 1_2_3_4_5 # VALID but discouraged
 
 ## spec-1.0.0/integer-2.toml
 
-Original:
 # hexadecimal with prefix `0x`
 hex1 = 0xDEADBEEF
 hex2 = 0xdeadbeef
@@ -1751,19 +1762,6 @@ hex3 = 0xdead_beef
 # octal with prefix `0o`
 oct1 = 0o01234567
 oct2 = 0o755 # useful for Unix file permissions
-
-# binary with prefix `0b`
-bin1 = 0b11010110
-
-Formatted:
-# hexadecimal with prefix `0x`
-hex1 = 0xDEADBEEF
-hex2 = 0xdeadbeef
-hex3 = 0xdead_beef
-
-# octal with prefix `0o`
-oct1 = 0o01234567
-oct2 = 0o755      # useful for Unix file permissions
 
 # binary with prefix `0b`
 bin1 = 0b11010110
@@ -1802,8 +1800,8 @@ fruit. color = "yellow"    # same as fruit.color
 fruit . flavor = "banana"   # same as fruit.flavor
 
 Formatted:
-fruit.name = "banana"   # this is best practice
-fruit.color = "yellow"  # same as fruit.color
+fruit.name = "banana" # this is best practice
+fruit.color = "yellow" # same as fruit.color
 fruit.flavor = "banana" # same as fruit.flavor
 
 ## spec-1.0.0/keys-5.toml
@@ -2061,7 +2059,7 @@ another = "# This is not a comment"
 
 Formatted:
 # This is a full-line comment
-key = "value"                       # This is a comment at the end of a line
+key = "value" # This is a comment at the end of a line
 another = "# This is not a comment"
 
 ## spec-1.1.0/common-1.toml
@@ -2199,7 +2197,6 @@ int8 = 1_2_3_4_5 # VALID but discouraged
 
 ## spec-1.1.0/common-22.toml
 
-Original:
 # hexadecimal with prefix `0x`
 hex1 = 0xDEADBEEF
 hex2 = 0xdeadbeef
@@ -2208,19 +2205,6 @@ hex3 = 0xdead_beef
 # octal with prefix `0o`
 oct1 = 0o01234567
 oct2 = 0o755 # useful for Unix file permissions
-
-# binary with prefix `0b`
-bin1 = 0b11010110
-
-Formatted:
-# hexadecimal with prefix `0x`
-hex1 = 0xDEADBEEF
-hex2 = 0xdeadbeef
-hex3 = 0xdead_beef
-
-# octal with prefix `0o`
-oct1 = 0o01234567
-oct2 = 0o755      # useful for Unix file permissions
 
 # binary with prefix `0b`
 bin1 = 0b11010110
@@ -2246,6 +2230,7 @@ flt8 = 224_617.445_991_228
 
 ## spec-1.1.0/common-25.toml
 
+Original:
 # infinity
 sf1 = inf  # positive infinity
 sf2 = +inf # positive infinity
@@ -2253,6 +2238,17 @@ sf3 = -inf # negative infinity
 
 # not a number
 sf4 = nan  # actual sNaN/qNaN encoding is implementation-specific
+sf5 = +nan # same as `nan`
+sf6 = -nan # valid, actual encoding is implementation-specific
+
+Formatted:
+# infinity
+sf1 = inf # positive infinity
+sf2 = +inf # positive infinity
+sf3 = -inf # negative infinity
+
+# not a number
+sf4 = nan # actual sNaN/qNaN encoding is implementation-specific
 sf5 = +nan # same as `nan`
 sf6 = -nan # valid, actual encoding is implementation-specific
 
@@ -2633,8 +2629,8 @@ fruit. color = "yellow"     # same as fruit.color
 fruit . flavor = "banana"   # same as fruit.flavor
 
 Formatted:
-fruit.name = "banana"   # this is best practice
-fruit.color = "yellow"  # same as fruit.color
+fruit.name = "banana" # this is best practice
+fruit.color = "yellow" # same as fruit.color
 fruit.flavor = "banana" # same as fruit.flavor
 
 ## spec-1.1.0/common-8.toml
