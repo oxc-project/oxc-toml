@@ -755,10 +755,11 @@ fn format_inline_table(
     }
     let context = &context;
 
-    let child_count = node.children().len();
-
-    if node.children().is_empty() {
-        formatted = "{}".into();
+    // Check if the inline table has any ENTRY nodes (not just tokens like braces)
+    let has_entries = node.children().iter().any(|c| c.kind() == ENTRY);
+    
+    if !has_entries {
+        return (Element::Node(node.clone()), "{}".into(), None);
     }
 
     let mut sorted_children = if options.reorder_inline_tables {
@@ -799,22 +800,12 @@ fn format_inline_table(
             }
             Element::Token(t) => match t.kind() {
                 BRACE_START => {
-                    if child_count == 0 {
-                        // We're only interested in trailing comments.
-                        continue;
-                    }
-
                     formatted += "{";
                     if !options.compact_inline_tables {
                         formatted += " ";
                     }
                 }
                 BRACE_END => {
-                    if child_count == 0 {
-                        // We're only interested in trailing comments.
-                        continue;
-                    }
-
                     if !options.compact_inline_tables {
                         formatted += " ";
                     }
