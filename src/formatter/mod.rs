@@ -935,7 +935,8 @@ fn format_array(
         were_values
     };
 
-    let node_count = node.children().len();
+    // Count only VALUE nodes, not all children
+    let node_count = node.children().iter().filter(|c| c.kind() == VALUE).count();
 
     let mut inner_context = context.clone();
 
