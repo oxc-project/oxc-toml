@@ -41,12 +41,12 @@ const SKIP_INVALID: &[&str] = &[
     "inline-table/overwrite-09.toml",
     "inline-table/overwrite-10.toml",
     // TOML 1.1.0 allows these features that were invalid in 1.0
-    "inline-table/empty-03.toml",        // Empty inline tables with newlines
-    "inline-table/linebreak-01.toml",    // Newlines in inline tables
-    "inline-table/linebreak-02.toml",    // Newlines in inline tables
-    "inline-table/linebreak-03.toml",    // Newlines in inline tables
-    "inline-table/linebreak-04.toml",    // Newlines in inline tables
-    "inline-table/trailing-comma.toml",  // Trailing commas in inline tables
+    "inline-table/empty-03.toml", // Empty inline tables with newlines
+    "inline-table/linebreak-01.toml", // Newlines in inline tables
+    "inline-table/linebreak-02.toml", // Newlines in inline tables
+    "inline-table/linebreak-03.toml", // Newlines in inline tables
+    "inline-table/linebreak-04.toml", // Newlines in inline tables
+    "inline-table/trailing-comma.toml", // Trailing commas in inline tables
     "key/dotted-redefine-table-01.toml",
     "key/dotted-redefine-table-02.toml",
     "key/duplicate-keys-01.toml",
@@ -131,7 +131,7 @@ fn test_valid_idempotent() {
         });
 
         match result {
-            Ok(true) => {}, // Success
+            Ok(true) => {} // Success
             Ok(false) => failures.push(path.to_path_buf()),
             Err(_) => panics.push(path.to_path_buf()),
         }

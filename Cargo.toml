@@ -1,11 +1,11 @@
 [package]
 name = "oxc-toml"
 version = "0.14.1"
-authors = ["Boshen",]
-categories = ["parser-implementations", "parsing",]
+authors = ["Boshen"]
+categories = ["parser-implementations", "parsing"]
 edition = "2024"
 homepage = "https://github.com/oxc-project/oxc-toml"
-keywords = ["toml", "formatter",]
+keywords = ["toml", "formatter"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/oxc-project/oxc-toml"
@@ -16,5 +16,5 @@ test = false
 doctest = false
 
 [dev-dependencies]
-walkdir = "2"
 ignore = "0.4"
+walkdir = "2"

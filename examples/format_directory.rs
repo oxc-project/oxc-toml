@@ -13,11 +13,11 @@ use std::fs;
 use std::path::Path;
 
 use ignore::WalkBuilder;
-use oxc_toml::{format, Options};
+use oxc_toml::{Options, format};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    
+
     // Show help if requested
     if args.len() > 1 && (args[1] == "--help" || args[1] == "-h") {
         println!("Usage: {} [PATH]", args[0]);
