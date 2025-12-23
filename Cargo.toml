@@ -17,3 +17,4 @@ doctest = false
 
 [dev-dependencies]
 walkdir = "2"
+ignore = "0.4"

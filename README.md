@@ -14,12 +14,22 @@ This library provides TOML formatting capabilities while preserving comments, wh
 ## Usage
 
 ```rust
-use oxc_toml::formatter::{format, Options};
+use oxc_toml::{format, Options};
 
 const SOURCE: &str = "value=1\n[table]\nstring='some string'";
 
 let formatted = format(SOURCE, Options::default());
 ```
+
+### Examples
+
+Format all TOML files in a directory:
+
+```bash
+cargo run --example format_directory [PATH]
+```
+
+This example uses the `ignore` crate to walk a directory tree and format all TOML files, respecting .gitignore and other ignore files.
 
 ## Attribution
 
