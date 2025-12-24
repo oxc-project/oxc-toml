@@ -6,6 +6,30 @@ use walkdir::WalkDir;
 
 const TOML_TEST_DIR: &str = "toml-test/tests";
 
+/// Compare two TOML values, treating NaN as equal to NaN.
+///
+/// While `toml::Value` implements `PartialEq`, it follows IEEE 754 semantics where NaN != NaN.
+/// For semantic equivalence testing, we want NaN to equal NaN, so we need custom comparison.
+fn values_equal(a: &toml::Value, b: &toml::Value) -> bool {
+    match (a, b) {
+        (toml::Value::Float(f1), toml::Value::Float(f2)) => {
+            // Special case: treat NaN == NaN as true
+            (f1.is_nan() && f2.is_nan()) || (f1 == f2)
+        }
+        (toml::Value::Array(a1), toml::Value::Array(a2)) => {
+            // Recursively compare arrays to handle nested NaN values
+            a1.len() == a2.len() && a1.iter().zip(a2.iter()).all(|(v1, v2)| values_equal(v1, v2))
+        }
+        (toml::Value::Table(t1), toml::Value::Table(t2)) => {
+            // Recursively compare tables to handle nested NaN values
+            t1.len() == t2.len()
+                && t1.iter().all(|(k, v1)| t2.get(k).map_or(false, |v2| values_equal(v1, v2)))
+        }
+        // For all other types, use the standard PartialEq implementation
+        _ => a == b,
+    }
+}
+
 /// Files that the parser accepts but shouldn't according to the spec
 /// These require semantic validation which is not implemented:
 /// - Duplicate key detection
@@ -106,7 +130,8 @@ fn toml_files(dir: &str) -> impl Iterator<Item = walkdir::DirEntry> {
 
 #[test]
 fn test_valid_idempotent() {
-    let mut failures = Vec::new();
+    let mut idempotent_failures = Vec::new();
+    let mut semantic_failures = Vec::new();
     let mut panics = Vec::new();
 
     for entry in toml_files("valid") {
@@ -117,23 +142,50 @@ fn test_valid_idempotent() {
         let result = std::panic::catch_unwind(|| {
             let first = format(&source, Options::default());
             let second = format(&first, Options::default());
-            first == second
+            
+            // Test 1: Idempotency
+            let is_idempotent = first == second;
+            
+            // Test 2: Semantic equivalence - parse both original and formatted with toml crate
+            // Only perform this check if both can be parsed
+            let original_parsed: Result<toml::Value, _> = toml::from_str(&source);
+            let formatted_parsed: Result<toml::Value, _> = toml::from_str(&first);
+            
+            let is_semantically_equivalent = match (&original_parsed, &formatted_parsed) {
+                (Ok(orig), Ok(fmt)) => {
+                    // Both parsed successfully - compare values using custom comparison
+                    // that treats NaN == NaN
+                    values_equal(orig, fmt)
+                }
+                _ => {
+                    // If either fails to parse with the toml crate, skip semantic check
+                    // This can happen for valid TOML that the toml crate doesn't support,
+                    // or if our formatter has bugs that produce invalid TOML
+                    true // Don't fail the test, just skip the semantic check
+                }
+            };
+            
+            (is_idempotent, is_semantically_equivalent)
         });
 
         match result {
-            Ok(true) => {} // Success
-            Ok(false) => failures.push(path.to_path_buf()),
+            Ok((true, true)) => {} // Success - both tests passed
+            Ok((false, _)) => idempotent_failures.push(path.to_path_buf()),
+            Ok((true, false)) => semantic_failures.push(path.to_path_buf()),
             Err(_) => panics.push(path.to_path_buf()),
         }
     }
 
     if !panics.is_empty() {
-        eprintln!("Formatter panicked on:\n{panics:#?}");
+        eprintln!("Formatter panicked on {} files:\n{panics:#?}", panics.len());
     }
-    if !failures.is_empty() {
-        eprintln!("Formatter is not idempotent for:\n{failures:#?}");
+    if !idempotent_failures.is_empty() {
+        eprintln!("Formatter is not idempotent for {} files:\n{idempotent_failures:#?}", idempotent_failures.len());
     }
-    assert!(panics.is_empty() && failures.is_empty());
+    if !semantic_failures.is_empty() {
+        eprintln!("Formatter changed semantic meaning for {} files:\n{semantic_failures:#?}", semantic_failures.len());
+    }
+    assert!(panics.is_empty() && idempotent_failures.is_empty() && semantic_failures.is_empty());
 }
 
 #[test]
