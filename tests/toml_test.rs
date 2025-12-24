@@ -6,10 +6,6 @@ use walkdir::WalkDir;
 
 const TOML_TEST_DIR: &str = "toml-test/tests";
 
-/// Files that fail idempotent formatting  
-/// These use TOML 1.1 features that are challenging to format perfectly
-const SKIP_VALID: &[&str] = &[];
-
 /// Files that the parser accepts but shouldn't according to the spec
 /// These require semantic validation which is not implemented:
 /// - Duplicate key detection
@@ -115,9 +111,6 @@ fn test_valid_idempotent() {
 
     for entry in toml_files("valid") {
         let path = entry.path();
-        if should_skip(path, SKIP_VALID) {
-            continue;
-        }
 
         let source = fs::read_to_string(path).unwrap();
 

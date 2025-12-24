@@ -6,13 +6,6 @@ use walkdir::WalkDir;
 
 const TOML_TEST_DIR: &str = "toml-test/tests";
 
-const SKIP_VALID: &[&str] = &[];
-
-fn should_skip(path: &Path) -> bool {
-    let path_str = path.to_string_lossy();
-    SKIP_VALID.iter().any(|skip| path_str.ends_with(skip))
-}
-
 #[test]
 fn snapshot() {
     let valid_dir = Path::new(TOML_TEST_DIR).join("valid");
@@ -24,7 +17,6 @@ fn snapshot() {
         .into_iter()
         .filter_map(Result::ok)
         .filter(|e| e.path().extension().is_some_and(|ext| ext == "toml"))
-        .filter(|e| !should_skip(e.path()))
         .map(|e| e.path().to_path_buf())
         .collect();
 
