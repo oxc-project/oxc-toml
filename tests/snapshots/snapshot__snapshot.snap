@@ -984,13 +984,7 @@ Formatted:
 clap-1 = { version = "4", features = ["derive", "cargo"] }
 
 # Contains some literal tabs!
-clap-2 = { version = "4", features = [
-  "derive",
-  "cargo",
-], nest = { "a" = 'x', 'b' = [
-  1.5,
-  9.0,
-] } }
+clap-2 = { version = "4", features = ["derive", "cargo"], nest = { "a" = 'x', 'b' = [1.5, 9.0] } }
 
 ## integer/float64-max.toml
 
@@ -1678,11 +1672,7 @@ points = [ { x = 1, y = 2, z = 3 },
            { x = 2, y = 4, z = 8 } ]
 
 Formatted:
-points = [
-  { x = 1, y = 2, z = 3 },
-  { x = 7, y = 8, z = 9 },
-  { x = 2, y = 4, z = 8 },
-]
+points = [{ x = 1, y = 2, z = 3 }, { x = 7, y = 8, z = 9 }, { x = 2, y = 4, z = 8 }]
 
 ## spec-1.0.0/boolean-0.toml
 
@@ -2643,11 +2633,7 @@ points = [ { x = 1, y = 2, z = 3 },
            { x = 2, y = 4, z = 8 } ]
 
 Formatted:
-points = [
-  { x = 1, y = 2, z = 3 },
-  { x = 7, y = 8, z = 9 },
-  { x = 2, y = 4, z = 8 },
-]
+points = [{ x = 1, y = 2, z = 3 }, { x = 7, y = 8, z = 9 }, { x = 2, y = 4, z = 8 }]
 
 ## spec-1.1.0/common-6.toml
 
