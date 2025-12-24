@@ -747,7 +747,6 @@ fn format_inline_table(
     context: &Context,
 ) -> impl FormattedItem {
     let mut formatted = String::new();
-    let mut comment = None;
 
     let mut context = context.clone();
     if context.force_multiline {
@@ -771,11 +770,15 @@ fn format_inline_table(
     };
 
     let mut node_index = 0;
+    let mut last_was_comment = false;
     for c in node.children_with_tokens() {
         match c {
             Element::Node(n) => {
                 if node_index != 0 {
                     formatted += ", ";
+                } else if last_was_comment {
+                    // Need space after inline comment before first entry
+                    formatted += " ";
                 }
 
                 let child = if options.reorder_inline_tables {
@@ -797,6 +800,7 @@ fn format_inline_table(
                 }
 
                 node_index += 1;
+                last_was_comment = false;
             }
             Element::Token(t) => match t.kind() {
                 BRACE_START => {
@@ -811,29 +815,25 @@ fn format_inline_table(
                     }
                     formatted += "}";
                 }
-                WHITESPACE | COMMA => {}
-                NEWLINE => {
-                    // TOML 1.1 allows newlines in inline tables
-                    // For now, we preserve them to avoid breaking formatting
-                    formatted += options.newline();
+                WHITESPACE | COMMA | NEWLINE => {
+                    // Skip whitespace, commas, and newlines
+                    // TOML 1.1 allows newlines in inline tables, but we collapse to single-line for consistency
                 }
                 COMMENT => {
                     // TOML 1.1 allows comments in inline tables
-                    // Comments that aren't attached to entries are trailing comments
-                    if comment.is_none() {
-                        comment = Some(t.text(source).into());
-                    } else {
-                        // Multiple comments - add inline
+                    // Preserve comments inline
+                    if !formatted.ends_with(' ') && !formatted.ends_with('{') {
                         formatted += " ";
-                        formatted += t.text(source);
                     }
+                    formatted += t.text(source);
+                    last_was_comment = true;
                 }
                 _ => formatted += t.text(source),
             },
         }
     }
 
-    (Element::Node(node.clone()), formatted, comment)
+    (Element::Node(node.clone()), formatted, None)
 }
 // Check whether the array spans multiple lines in its current form.
 fn is_array_multiline(node: &SyntaxNode) -> bool {

@@ -759,12 +759,13 @@ impl<'p> Parser<'p> {
                 }
                 NEWLINE => {
                     // TOML 1.1.0 allows newlines in inline tables
-                    // To avoid infinite loop in case new lines are whitelisted
-                    if was_newline {
-                        break;
-                    }
                     self.token()?;
                     was_newline = true;
+                }
+                COMMENT => {
+                    // TOML 1.1.0 allows comments in inline tables
+                    self.token()?;
+                    // Don't reset was_newline - comments don't change separator requirements
                 }
                 COMMA => {
                     if comma_last {

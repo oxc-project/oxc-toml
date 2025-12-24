@@ -6,7 +6,7 @@ use walkdir::WalkDir;
 
 const TOML_TEST_DIR: &str = "toml-test/tests";
 
-const SKIP_VALID: &[&str] = &["inline-table/newline-comment.toml", "float/inf-and-nan.toml"];
+const SKIP_VALID: &[&str] = &[];
 
 fn should_skip(path: &Path) -> bool {
     let path_str = path.to_string_lossy();

@@ -576,6 +576,17 @@ negpi = -3.14
 zero-intpart = 0.123
 leading-zero-fractional = 0.0123
 
+## float/inf-and-nan.toml
+
+# We don't encode +nan and -nan back with the signs; many languages don't
+# support a sign on NaN (it doesn't really make much sense).
+nan = nan
+nan_neg = -nan
+nan_plus = +nan
+infinity = inf
+infinity_neg = -inf
+infinity_plus = +inf
+
 ## float/long.toml
 
 longpi = 3.141592653589793
@@ -859,6 +870,54 @@ arr_arr_tbl_empty = [[{}]]
 arr_arr_tbl_val = [[{ one = 1 }]]
 arr_arr_tbls = [[{ one = 1 }, { two = 2 }]]
 
+## inline-table/newline-comment.toml
+
+Original:
+# Identical to newline.toml, but with comments that shouldn't affect the
+# results.
+
+trailing-comma-1 = {#comment
+	# comment
+	c = 1,#comment
+	#comment
+}#comment
+trailing-comma-2 = { c = 1, }#comment
+
+tbl-1 = {#comment
+	hello = "world",#comment
+	1     = 2,#comment
+	arr   = [1,#comment
+	         2,#comment
+	         3,#comment
+	        ],#comment
+	tbl = {#comment
+		 k = 1,#comment
+	}#comment
+}#comment
+
+tbl-2 = {#comment
+	k = """
+	Hello
+	"""#comment
+}#comment
+
+Formatted:
+# Identical to newline.toml, but with comments that shouldn't affect the
+# results.
+
+trailing-comma-1 = { #comment # comment c = 1 #comment #comment } #comment
+trailing-comma-2 = { c = 1 } #comment
+
+tbl-1 = { #comment hello = "world" #comment, 1 = 2 #comment, arr = [
+  1, #comment
+  2, #comment
+  3, #comment
+] #comment, tbl = { #comment k = 1 #comment } #comment } #comment
+
+tbl-2 = { #comment k = """
+	Hello
+	""" #comment } #comment
+
 ## inline-table/newline.toml
 
 Original:
@@ -898,33 +957,18 @@ b = 2,}
 Formatted:
 # TOML 1.1 supports newlines in inline tables and trailing commas.
 
-trailing-comma-1 = { 
-c = 1
- }
+trailing-comma-1 = { c = 1 }
 trailing-comma-2 = { c = 1 }
 
-tbl-1 = { 
-hello = "world"
-, 1 = 2
-, arr = [1, 2, 3]
-, tbl = { 
-k = 1
- }
- }
+tbl-1 = { hello = "world", 1 = 2, arr = [1, 2, 3], tbl = { k = 1 } }
 
-tbl-2 = { 
-k = """
+tbl-2 = { k = """
 	Hello
-	"""
- }
+	""" }
 
-no-newline-before-brace = { 
-a = 1
-, b = 2 }
+no-newline-before-brace = { a = 1, b = 2 }
 
-no-newline-before-brace-with-comma = { 
-a = 1
-, b = 2 }
+no-newline-before-brace-with-comma = { a = 1, b = 2 }
 
 ## inline-table/spaces.toml
 
@@ -2484,16 +2528,7 @@ Formatted:
 name = { first = "Tom", last = "Preston-Werner" }
 point = { x = 1, y = 2 }
 animal = { type.name = "pug" }
-contact = { 
-personal = { 
-name = "Donald Duck"
-, email = "donald@duckburg.com"
- }
-, work = { 
-name = "Coin cleaner"
-, email = "donald@ScroogeCorp.com"
- }
- }
+contact = { personal = { name = "Donald Duck", email = "donald@duckburg.com" }, work = { name = "Coin cleaner", email = "donald@ScroogeCorp.com" } }
 
 ## spec-1.1.0/common-48.toml
 

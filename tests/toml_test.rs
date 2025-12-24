@@ -8,13 +8,7 @@ const TOML_TEST_DIR: &str = "toml-test/tests";
 
 /// Files that fail idempotent formatting  
 /// These use TOML 1.1 features that are challenging to format perfectly
-const SKIP_VALID: &[&str] = &[
-    // TOML 1.1: Inline tables with newlines and comments
-    // The formatter has partial support but struggles with complex nested cases
-    // where newlines, comments, and trailing commas are intermixed.
-    // This is a rare edge case; simple inline tables and most real-world TOML files work fine.
-    "inline-table/newline-comment.toml",
-];
+const SKIP_VALID: &[&str] = &[];
 
 /// Files that the parser accepts but shouldn't according to the spec
 /// These require semantic validation which is not implemented:
