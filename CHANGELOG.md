@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.3](https://github.com/oxc-project/oxc-toml/compare/v0.14.2...v0.14.3) - 2025-12-31
+
+### Other
+
+- *(deps)* update crate-ci/typos action to v1.41.0 ([#11](https://github.com/oxc-project/oxc-toml/pull/11))
+- *(deps)* update crate-ci/typos action to v1.40.1 ([#10](https://github.com/oxc-project/oxc-toml/pull/10))
+- *(deps)* update github-actions ([#8](https://github.com/oxc-project/oxc-toml/pull/8))
+
 ## [0.14.2](https://github.com/oxc-project/oxc-toml/compare/v0.14.1...v0.14.2) - 2025-12-24
 
 ### Added
