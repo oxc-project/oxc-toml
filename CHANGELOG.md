@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.3](https://github.com/oxc-project/oxc-toml/compare/v0.14.2...v0.14.3) - 2026-01-08
+
+### Other
+
+- *(deps)* update crate-ci/typos action to v1.42.0 ([#15](https://github.com/oxc-project/oxc-toml/pull/15))
+- *(deps)* update rust crate insta to v1.46.0 ([#14](https://github.com/oxc-project/oxc-toml/pull/14))
+- *(deps)* update taiki-e/install-action action to v2.65.12 ([#13](https://github.com/oxc-project/oxc-toml/pull/13))
+- *(deps)* update dependency dprint-json to v0.21.1 ([#12](https://github.com/oxc-project/oxc-toml/pull/12))
+- *(deps)* update crate-ci/typos action to v1.41.0 ([#11](https://github.com/oxc-project/oxc-toml/pull/11))
+- *(deps)* update crate-ci/typos action to v1.40.1 ([#10](https://github.com/oxc-project/oxc-toml/pull/10))
+- *(deps)* update github-actions ([#8](https://github.com/oxc-project/oxc-toml/pull/8))
+
 ## [0.14.2](https://github.com/oxc-project/oxc-toml/compare/v0.14.1...v0.14.2) - 2025-12-24
 
 ### Added
