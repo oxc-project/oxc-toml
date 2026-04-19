@@ -37,7 +37,14 @@ watch-check:
   just watch "'cargo check; cargo clippy'"
 
 clone-test-data:
-  git clone git@github.com:toml-lang/toml-test.git
+  if [ -d toml-test/.git ]; then \
+    git -C toml-test pull --ff-only; \
+  elif [ -e toml-test ]; then \
+    echo "toml-test exists but is not a git checkout" >&2; \
+    exit 1; \
+  else \
+    git clone git@github.com:toml-lang/toml-test.git; \
+  fi
 
 test:
   cargo test
