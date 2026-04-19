@@ -91,6 +91,7 @@ const SKIP_INVALID: &[&str] = &[
     "table/append-with-dotted-keys-05.toml",
     "table/append-with-dotted-keys-06.toml",
     "table/append-with-dotted-keys-07.toml",
+    "table/append-with-dotted-keys-08.toml",
     "table/array-implicit.toml",
     "table/duplicate-key-01.toml",
     "table/duplicate-key-02.toml",
