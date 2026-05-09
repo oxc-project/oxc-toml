@@ -1,5 +1,6 @@
 ---
 source: tests/snapshot.rs
+assertion_line: 68
 expression: snapshot
 ---
 ## array/array-subtables.toml
@@ -557,16 +558,57 @@ best-day-ever = 1987-07-05T17:45:00Z
 boring = false
 perfection = [6, 28, 496]
 
+## float/exponent-upper.toml
+
+Original:
+# Both upper- and lower-case "e" is valid, so repeat the exponent.toml test with
+# upper-case.
+exp        = 3E2
+pos-exp    = 3E+2
+neg-exp    = 3E-2
+zero-exp   = 3E0
+frac       = 3.1E2
+neg        = -1E-1
+zero       = 0E2
+zero-plus = +0E2
+
+Formatted:
+# Both upper- and lower-case "e" is valid, so repeat the exponent.toml test with
+# upper-case.
+exp = 3E2
+pos-exp = 3E+2
+neg-exp = 3E-2
+zero-exp = 3E0
+frac = 3.1E2
+neg = -1E-1
+zero = 0E2
+zero-plus = +0E2
+
 ## float/exponent.toml
 
-lower = 3e2
-upper = 3E2
-neg = 3e-2
-pos = 3E+2
-zero = 3e0
-pointlower = 3.1e2
-pointupper = 3.1E2
-minustenth = -1E-1
+Original:
+# Please keep exponent-upper.toml in sync with this.
+
+exp       = 3e2
+pos-exp   = 3e+2
+neg-exp   = 3e-2
+zero-exp  = 3e0
+frac      = 3.1e2
+neg       = -1e-1
+zero      = 0e2
+zero-plus = +0e2
+
+Formatted:
+# Please keep exponent-upper.toml in sync with this.
+
+exp = 3e2
+pos-exp = 3e+2
+neg-exp = 3e-2
+zero-exp = 3e0
+frac = 3.1e2
+neg = -1e-1
+zero = 0e2
+zero-plus = +0e2
 
 ## float/float.toml
 
@@ -3426,9 +3468,27 @@ Formatted:
 
 [x.1.2]
 
-## table/no-eol.toml
+## table/no-eol-01.toml
 
+Original:
+# No newline at end of file.
 [table]
+
+Formatted:
+# No newline at end of file.
+[table]
+
+## table/no-eol-02.toml
+
+Original:
+# No newline at end of file.
+[table]
+a=1
+
+Formatted:
+# No newline at end of file.
+[table]
+a = 1
 
 ## table/sub-empty.toml
 
@@ -3503,3 +3563,21 @@ d = 4
 # [x.y.z] need these
 [x.y.z.w] # for this to work
 [x] # defining a super-table afterwards is ok
+
+## utf8-bom-01.toml
+
+Original:
+﻿# This file starts with an UTF-8 BOM (\xEF\xBB\xBF), which isn't recommended to use but valid.
+a=1
+
+Formatted:
+﻿# This file starts with an UTF-8 BOM (\xEF\xBB\xBF), which isn't recommended to use but valid.
+a = 1
+
+## utf8-bom-02.toml
+
+Original:
+﻿a=1# This file starts with an UTF-8 BOM (\xEF\xBB\xBF), which isn't recommended to use but valid.
+
+Formatted:
+﻿a = 1 # This file starts with an UTF-8 BOM (\xEF\xBB\xBF), which isn't recommended to use but valid.
