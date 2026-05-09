@@ -255,13 +255,12 @@ impl<'p> Parser<'p> {
 
                     self.insert_token(token, self.lexer.slice());
                 }
+                WHITESPACE if self.skip_whitespace => {
+                    self.insert_token(token, self.lexer.slice());
+                }
                 WHITESPACE => {
-                    if self.skip_whitespace {
-                        self.insert_token(token, self.lexer.slice());
-                    } else {
-                        self.current_token = Some(token);
-                        break;
-                    }
+                    self.current_token = Some(token);
+                    break;
                 }
                 ERROR => {
                     self.insert_token(token, self.lexer.slice());
