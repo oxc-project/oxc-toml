@@ -4,7 +4,7 @@
 use crate::{
     lexer::Lexer,
     syntax::{SyntaxKind, SyntaxKind::*},
-    tree::{SyntaxTree, TextRange, TreeBuilder, text_range},
+    tree::{Node, SyntaxTree, TextRange, TreeBuilder, text_range},
     util::{allowed_chars, check_escape},
 };
 
@@ -40,6 +40,14 @@ impl std::error::Error for Error {}
 ///
 /// This does not check for semantic errors such as duplicate keys.
 pub fn parse(source: &str) -> Parse {
+    let (root, errors) = parse_root(source);
+    Parse { tree: SyntaxTree { root, source: source.to_string() }, errors }
+}
+
+/// Parse a TOML document, returning just the root node and errors without
+/// copying the source. Used internally by the formatter to avoid an unnecessary
+/// allocation when the caller already owns the source.
+pub(crate) fn parse_root(source: &str) -> (crate::tree::Node, Vec<Error>) {
     Parser::new(source).parse()
 }
 
@@ -78,11 +86,14 @@ impl Parser<'_> {
     ///
     /// It allows a part of glob syntax in identifiers as well.
     #[allow(dead_code)]
-    pub(crate) fn parse_key_only(mut self) -> Parse {
+    pub(crate) fn parse_key_only(mut self, source: &str) -> Parse {
         self.key_pattern_syntax = true;
         let _ = with_node!(self.builder, KEY, self.parse_key());
 
-        Parse { tree: self.builder.finish(), errors: self.errors }
+        Parse {
+            tree: SyntaxTree { root: self.builder.finish_root(), source: source.to_string() },
+            errors: self.errors,
+        }
     }
 }
 
@@ -102,15 +113,15 @@ impl<'p> Parser<'p> {
             key_pattern_syntax: false,
             error_whitelist: 0,
             lexer: Lexer::new(source),
-            builder: TreeBuilder::new(source),
+            builder: TreeBuilder::new(),
             errors: Default::default(),
         }
     }
 
-    fn parse(mut self) -> Parse {
+    fn parse(mut self) -> (Node, Vec<Error>) {
         let _ = with_node!(self.builder, ROOT, self.parse_root());
 
-        Parse { tree: self.builder.finish(), errors: self.errors }
+        (self.builder.finish_root(), self.errors)
     }
 
     fn error(&mut self, message: &str) -> ParserResult<()> {
