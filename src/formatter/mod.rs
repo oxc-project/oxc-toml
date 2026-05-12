@@ -324,13 +324,7 @@ fn format_root(node: &SyntaxNode, source: &str, options: &Options, context: &Con
         match c {
             Element::Node(node) => match node.kind() {
                 TABLE_ARRAY_HEADER | TABLE_HEADER => {
-                    if add_entries(
-                        source,
-                        &mut entry_group,
-                        &mut formatted,
-                        options,
-                        &context,
-                    ) {
+                    if add_entries(source, &mut entry_group, &mut formatted, options, &context) {
                         formatted += options.newline();
                         skip_newlines = 0;
                     }
@@ -357,12 +351,7 @@ fn format_root(node: &SyntaxNode, source: &str, options: &Options, context: &Con
                         header_context.indent_level = header_context.indent_level.saturating_sub(1);
                     }
 
-                    if add_comments(
-                        &mut comment_group,
-                        &mut formatted,
-                        &header_context,
-                        options,
-                    ) {
+                    if add_comments(&mut comment_group, &mut formatted, &header_context, options) {
                         formatted += options.newline();
                         skip_newlines = 0;
                     }
@@ -406,28 +395,14 @@ fn format_root(node: &SyntaxNode, source: &str, options: &Options, context: &Con
 
                     if newline_count > 1 {
                         add_comments(&mut comment_group, &mut formatted, &context, options);
-                        add_entries(
-                            source,
-                            &mut entry_group,
-                            &mut formatted,
-                            options,
-                            &context,
-                        );
+                        add_entries(source, &mut entry_group, &mut formatted, options, &context);
                         skip_newlines = 0;
                     }
 
-                    formatted.extend(
-                        options.newlines(newline_count.saturating_sub(skip_newlines)),
-                    );
+                    formatted.extend(options.newlines(newline_count.saturating_sub(skip_newlines)));
                 }
                 COMMENT => {
-                    if add_entries(
-                        source,
-                        &mut entry_group,
-                        &mut formatted,
-                        options,
-                        &context,
-                    ) {
+                    if add_entries(source, &mut entry_group, &mut formatted, options, &context) {
                         formatted += options.newline();
                         skip_newlines = 0;
                     }
@@ -934,8 +909,7 @@ fn format_array(
                     }
 
                     let mut val_string = String::new();
-                    let comment =
-                        format_value(n, source, options, &inner_context, &mut val_string);
+                    let comment = format_value(n, source, options, &inner_context, &mut val_string);
 
                     let has_comma =
                         node_index < node_count - 1 || (multiline && options.array_trailing_comma);
@@ -992,12 +966,7 @@ fn format_array(
                     }
 
                     if newline_count > 1 {
-                        add_values(
-                            &mut value_group,
-                            &mut commas_group,
-                            formatted,
-                            &inner_context,
-                        );
+                        add_values(&mut value_group, &mut commas_group, formatted, &inner_context);
                         skip_newlines = 0;
                     }
 
@@ -1024,12 +993,7 @@ fn format_array(
                         continue;
                     }
 
-                    if add_values(
-                        &mut value_group,
-                        &mut commas_group,
-                        formatted,
-                        &inner_context,
-                    ) {
+                    if add_values(&mut value_group, &mut commas_group, formatted, &inner_context) {
                         *formatted += options.newline();
                         skip_newlines = 0;
                     }
