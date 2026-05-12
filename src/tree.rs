@@ -6,9 +6,10 @@
 use crate::syntax::SyntaxKind;
 use std::ops::Range;
 
+/// Byte offsets into the source. Limited to 4 GiB of source text.
 pub type TextRange = Range<u32>;
 
-// Helper function for creating TextRange from usize lexer offsets.
+#[inline]
 pub fn text_range(start: usize, end: usize) -> TextRange {
     start as u32..end as u32
 }
@@ -56,6 +57,7 @@ impl Node {
         self.children.iter()
     }
 
+    #[inline]
     pub fn text<'a>(&self, source: &'a str) -> &'a str {
         &source[self.span.start as usize..self.span.end as usize]
     }
@@ -84,6 +86,7 @@ impl Token {
         self.kind
     }
 
+    #[inline]
     pub fn text<'a>(&self, source: &'a str) -> &'a str {
         &source[self.span.start as usize..self.span.end as usize]
     }
@@ -115,6 +118,7 @@ impl Element {
         }
     }
 
+    #[inline]
     pub fn text<'a>(&self, source: &'a str) -> &'a str {
         match self {
             Element::Node(n) => n.text(source),
