@@ -1,6 +1,5 @@
 ---
 source: tests/snapshot.rs
-assertion_line: 68
 expression: snapshot
 ---
 ## array/array-subtables.toml
@@ -451,6 +450,7 @@ s = '2020-01-01x'
 
 ## datetime/leap-year.toml
 
+Original:
 2000-datetime       = 2000-02-29 15:15:15Z
 2000-datetime-local = 2000-02-29 15:15:15
 2000-date           = 2000-02-29
@@ -458,6 +458,15 @@ s = '2020-01-01x'
 2024-datetime       = 2024-02-29 15:15:15Z
 2024-datetime-local = 2024-02-29 15:15:15
 2024-date           = 2024-02-29
+
+Formatted:
+2000-datetime = 2000-02-29 15:15:15Z
+2000-datetime-local = 2000-02-29 15:15:15
+2000-date = 2000-02-29
+
+2024-datetime = 2024-02-29 15:15:15Z
+2024-datetime-local = 2024-02-29 15:15:15
+2024-date = 2024-02-29
 
 ## datetime/local-date.toml
 
@@ -1102,7 +1111,6 @@ b3 = 0b00000
 
 ## key/alphanum.toml
 
-Original:
 alpha = "a"
 123 = "num"
 000111 = "leading"
@@ -1111,21 +1119,6 @@ one1two2 = "mixed"
 with-dash = "dashed"
 under_score = "___"
 34-11 = 23
-
-[2018_10]
-001 = 1
-
-[a-a-a]
-_ = false
-
-Formatted:
-34-11 = 23alpha = "a"
-123 = "num"
-000111 = "leading"
-10e3 = "false float"
-one1two2 = "mixed"
-with-dash = "dashed"
-under_score = "___"
 
 [2018_10]
 001 = 1
