@@ -6,12 +6,12 @@
 use crate::syntax::SyntaxKind;
 use std::ops::Range;
 
-pub type TextRange = Range<usize>;
-pub type TextSize = usize;
+/// Byte offsets into the source. Limited to 4 GiB of source text.
+pub type TextRange = Range<u32>;
 
-// Helper function for creating TextRange (for compatibility with rowan)
-pub fn text_range(start: TextSize, end: TextSize) -> TextRange {
-    start..end
+#[inline]
+pub fn text_range(start: usize, end: usize) -> TextRange {
+    start as u32..end as u32
 }
 
 /// A complete syntax tree with source text
@@ -57,8 +57,9 @@ impl Node {
         self.children.iter()
     }
 
+    #[inline]
     pub fn text<'a>(&self, source: &'a str) -> &'a str {
-        &source[self.span.clone()]
+        &source[self.span.start as usize..self.span.end as usize]
     }
 
     pub fn first_child(&self) -> Option<&Element> {
@@ -85,8 +86,9 @@ impl Token {
         self.kind
     }
 
+    #[inline]
     pub fn text<'a>(&self, source: &'a str) -> &'a str {
-        &source[self.span.clone()]
+        &source[self.span.start as usize..self.span.end as usize]
     }
 
     pub fn to_string(&self, source: &str) -> String {
@@ -116,6 +118,7 @@ impl Element {
         }
     }
 
+    #[inline]
     pub fn text<'a>(&self, source: &'a str) -> &'a str {
         match self {
             Element::Node(n) => n.text(source),
@@ -207,21 +210,21 @@ impl TreeBuilder {
     }
 
     pub fn token(&mut self, kind: SyntaxKind, text: &str) {
-        let span = self.current_pos..self.current_pos + text.len();
-        let token = Token { kind, span };
+        let end = self.current_pos + text.len();
+        let token = Token { kind, span: self.current_pos as u32..end as u32 };
 
         if let Some(parent) = self.stack.last_mut() {
             parent.children.push(Element::Token(token));
         }
 
-        self.current_pos += text.len();
+        self.current_pos = end;
     }
 
     pub fn finish_node(&mut self) {
         let builder = self.stack.pop().expect("finish_node called without start_node");
         let node = Node {
             kind: builder.kind,
-            span: builder.start..self.current_pos,
+            span: builder.start as u32..self.current_pos as u32,
             children: builder.children,
         };
 
