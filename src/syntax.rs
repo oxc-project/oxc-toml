@@ -208,6 +208,12 @@ fn is_hex_digit(b: u8) -> bool {
     b.is_ascii_hexdigit()
 }
 
+/// A digit-led run followed by an identifier character is a bare key, not a
+/// number — same word-boundary rule as `true`/`nan` above.
+fn extends_into_ident(bytes: &[u8], len: usize, first: u8) -> bool {
+    first.is_ascii_digit() && bytes.get(len).is_some_and(|&b| is_ident_char(b))
+}
+
 // Lexer implementation for SyntaxKind
 impl<'source> LexerToken<'source> for SyntaxKind {
     fn lex(input: &'source str) -> Option<(Self, usize)> {
@@ -331,16 +337,9 @@ impl<'source> LexerToken<'source> for SyntaxKind {
 
         // Numbers and dates (complex matching)
         if first.is_ascii_digit() || first == b'+' || first == b'-' {
-            // A digit-led run followed by an identifier character is a bare
-            // key, not a number — same word-boundary rule as `true`/`nan` above.
-            let starts_with_digit = first.is_ascii_digit();
-            let extends_into_ident = |len: usize| {
-                starts_with_digit && bytes.get(len).is_some_and(|&b| is_ident_char(b))
-            };
-
             // Try date/time first (they are more specific)
             if let Some((kind, len)) = try_lex_datetime(input)
-                && !extends_into_ident(len)
+                && !extends_into_ident(bytes, len, first)
             {
                 return Some((kind, len));
             }
@@ -349,7 +348,7 @@ impl<'source> LexerToken<'source> for SyntaxKind {
             if bytes.len() >= 2 && bytes[0] == b'0' && bytes[1] == b'x' {
                 let len =
                     2 + bytes[2..].iter().take_while(|&&b| is_hex_digit(b) || b == b'_').count();
-                if len > 2 && !extends_into_ident(len) {
+                if len > 2 && !extends_into_ident(bytes, len, first) {
                     return Some((SyntaxKind::INTEGER_HEX, len));
                 }
             }
@@ -358,7 +357,7 @@ impl<'source> LexerToken<'source> for SyntaxKind {
                     .iter()
                     .take_while(|&&b| (b'0'..=b'7').contains(&b) || b == b'_')
                     .count();
-                if len > 2 && !extends_into_ident(len) {
+                if len > 2 && !extends_into_ident(bytes, len, first) {
                     return Some((SyntaxKind::INTEGER_OCT, len));
                 }
             }
@@ -367,14 +366,14 @@ impl<'source> LexerToken<'source> for SyntaxKind {
                     .iter()
                     .take_while(|&&b| b == b'0' || b == b'1' || b == b'_')
                     .count();
-                if len > 2 && !extends_into_ident(len) {
+                if len > 2 && !extends_into_ident(bytes, len, first) {
                     return Some((SyntaxKind::INTEGER_BIN, len));
                 }
             }
 
             // Try float or integer
             if let Some((kind, len)) = try_lex_number(input)
-                && !extends_into_ident(len)
+                && !extends_into_ident(bytes, len, first)
             {
                 return Some((kind, len));
             }
