@@ -38,3 +38,19 @@ fn test_formatter_preserves_comments() {
     assert!(formatted.contains("# Comment"));
     assert!(formatted.contains("value = 1"));
 }
+
+// https://github.com/oxc-project/oxc/issues/22348
+#[test]
+fn test_bare_key_starting_with_digit() {
+    let cases = [
+        "A = \"\"\n1_B = \"\"\n",
+        "1B = \"\"\n",
+        "1-B = \"\"\n",
+        "34-11 = 23\n",
+        "10e3 = \"false float\"\n",
+    ];
+    for input in cases {
+        let formatted = format(input, Options::default());
+        assert_eq!(formatted, input, "input: {input:?}");
+    }
+}
