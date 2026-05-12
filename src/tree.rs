@@ -179,7 +179,6 @@ impl<'a> Iterator for DescendantsIter<'a> {
 
 /// Builder for constructing a syntax tree during parsing
 pub struct TreeBuilder {
-    source: String,
     stack: Vec<NodeBuilder>,
     current_pos: usize,
 }
@@ -191,12 +190,20 @@ struct NodeBuilder {
 }
 
 impl TreeBuilder {
-    pub fn new(source: &str) -> Self {
-        Self { source: source.to_string(), stack: Vec::new(), current_pos: 0 }
+    pub fn new() -> Self {
+        // TOML nesting is shallow; 8 is enough to avoid reallocation in typical files.
+        Self { stack: Vec::with_capacity(8), current_pos: 0 }
     }
 
     pub fn start_node(&mut self, kind: SyntaxKind) {
-        self.stack.push(NodeBuilder { kind, start: self.current_pos, children: Vec::new() });
+        // Pre-size children based on the node kind to avoid the typical 0->4 growth.
+        let cap = match kind {
+            SyntaxKind::KEY | SyntaxKind::VALUE => 1,
+            SyntaxKind::ENTRY | SyntaxKind::TABLE_HEADER | SyntaxKind::TABLE_ARRAY_HEADER => 4,
+            _ => 0,
+        };
+        let children = if cap == 0 { Vec::new() } else { Vec::with_capacity(cap) };
+        self.stack.push(NodeBuilder { kind, start: self.current_pos, children });
     }
 
     pub fn token(&mut self, kind: SyntaxKind, text: &str) {
@@ -230,16 +237,16 @@ impl TreeBuilder {
         }
     }
 
-    pub fn finish(mut self) -> SyntaxTree {
+    /// Finalize the tree by returning the root node. The source is supplied separately
+    /// so the builder does not need to own a copy during parsing.
+    pub fn finish_root(mut self) -> Node {
         assert_eq!(self.stack.len(), 1, "TreeBuilder finished with unbalanced nodes");
 
         let root_builder = self.stack.pop().unwrap();
-        let root = match root_builder.children.into_iter().next() {
+        match root_builder.children.into_iter().next() {
             Some(Element::Node(n)) => n,
             _ => panic!("TreeBuilder finished without root node"),
-        };
-
-        SyntaxTree { root, source: self.source }
+        }
     }
 }
 
