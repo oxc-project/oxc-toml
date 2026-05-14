@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.4](https://github.com/oxc-project/oxc-toml/compare/v0.14.3...v0.14.4) - 2026-05-14
+
+### Fixed
+
+- *(lexer)* treat digit-led runs ending in a bare-key char as identifiers ([#73](https://github.com/oxc-project/oxc-toml/pull/73))
+
+### Other
+
+- use ubuntu-latest for security workflow ([#76](https://github.com/oxc-project/oxc-toml/pull/76))
+- switch TextRange to Range<u32> ([#75](https://github.com/oxc-project/oxc-toml/pull/75))
+- reduce memory allocations in parser and formatter ([#74](https://github.com/oxc-project/oxc-toml/pull/74))
+- *(deps)* update crate-ci/typos action to v1.46.1 ([#72](https://github.com/oxc-project/oxc-toml/pull/72))
+- *(deps)* update oxc-project/security-action action to v1.0.5 ([#70](https://github.com/oxc-project/oxc-toml/pull/70))
+
 ## [0.14.3](https://github.com/oxc-project/oxc-toml/compare/v0.14.2...v0.14.3) - 2026-05-10
 
 ### Fixed
