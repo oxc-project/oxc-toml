@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.5](https://github.com/oxc-project/oxc-toml/compare/v0.14.4...v0.14.5) - 2026-06-14
+
+### Other
+
+- *(deps)* update rust crates to v1.48.0 ([#89](https://github.com/oxc-project/oxc-toml/pull/89))
+- *(deps)* update rust crates to v0.4.26 ([#88](https://github.com/oxc-project/oxc-toml/pull/88))
+- *(deps)* update typos to v1.47.2 ([#87](https://github.com/oxc-project/oxc-toml/pull/87))
+- *(deps)* update typos to v1.47.1 ([#86](https://github.com/oxc-project/oxc-toml/pull/86))
+- *(deps)* update crate-ci/typos action to v1.47.0 ([#85](https://github.com/oxc-project/oxc-toml/pull/85))
+- *(deps)* update github actions ([#84](https://github.com/oxc-project/oxc-toml/pull/84))
+- *(deps)* update dependency rust to v1.96.0 ([#83](https://github.com/oxc-project/oxc-toml/pull/83))
+- *(deps)* update crate-ci/typos action to v1.46.3 ([#82](https://github.com/oxc-project/oxc-toml/pull/82))
+- *(deps)* update dependency dprint-markdown to v0.22.1 ([#81](https://github.com/oxc-project/oxc-toml/pull/81))
+- *(deps)* update crate-ci/typos action to v1.46.2 ([#80](https://github.com/oxc-project/oxc-toml/pull/80))
+- *(deps)* update dependency dprint-markdown to v0.22.0 ([#78](https://github.com/oxc-project/oxc-toml/pull/78))
+- *(deps)* update actions/create-github-app-token action to v3.2.0 ([#77](https://github.com/oxc-project/oxc-toml/pull/77))
+
 ## [0.14.4](https://github.com/oxc-project/oxc-toml/compare/v0.14.3...v0.14.4) - 2026-05-14
 
 ### Fixed
