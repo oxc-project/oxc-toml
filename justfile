@@ -10,7 +10,7 @@ alias r := ready
 alias clone := clone-test-data
 
 init:
-  cargo binstall watchexec-cli cargo-insta typos-cli cargo-shear dprint -y
+  cargo binstall watchexec-cli cargo-insta typos-cli cargo-shear@1.13.1 dprint -y
   just clone-test-data
 
 ready:
@@ -26,7 +26,7 @@ watch *args='':
   watchexec --no-vcs-ignore {{args}}
 
 fmt:
-  cargo shear --fix
+  cargo shear --fix --check-test-targets
   cargo fmt --all
   dprint fmt
 
