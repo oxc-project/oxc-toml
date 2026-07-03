@@ -69,6 +69,6 @@ This project maintains the original MIT License from Taplo. See [LICENSE](LICENS
 
 <p align="center">
   <a href="https://github.com/sponsors/Boshen">
-    <img src="https://raw.githubusercontent.com/Boshen/sponsors/main/sponsors.svg" alt="My sponsors" />
+    <img src="https://raw.githubusercontent.com/Boshen/sponsors/main/sponsors.svg" alt="Our sponsors" />
   </a>
 </p>
