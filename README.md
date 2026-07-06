@@ -1,5 +1,7 @@
 # oxc-toml
 
+This is forked from [Taplo](https://github.com/tamasfe/taplo) for Oxfmt.
+
 A TOML formatter library.
 
 This library provides TOML formatting capabilities while preserving comments, whitespace, and the original document structure where appropriate.
