@@ -981,8 +981,7 @@ fn format_array(
                             .take(elem_idx)
                             .rev()
                             .find(|e| e.kind() != WHITESPACE)
-                            .map(|e| e.kind() == NEWLINE)
-                            .unwrap_or(false)
+                            .is_some_and(|e| e.kind() == NEWLINE)
                     } else {
                         false
                     };
