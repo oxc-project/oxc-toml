@@ -9,6 +9,7 @@ keywords = ["toml", "formatter"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/oxc-project/oxc-toml"
+rust-version = "1.95.0"
 description = "A TOML formatter library"
 
 [lib]
