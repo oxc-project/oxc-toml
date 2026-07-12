@@ -11,8 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Other
 
-- *(deps)* update crossbeam-epoch to v0.9.20 to fix RUSTSEC-2026-0204
-- *(deps)* update dependency rust to v1.97.0 ([#103](https://github.com/oxc-project/oxc-toml/pull/103))
+- _(deps)_ update crossbeam-epoch to v0.9.20 to fix RUSTSEC-2026-0204
+- _(deps)_ update dependency rust to v1.97.0 ([#103](https://github.com/oxc-project/oxc-toml/pull/103))
 - pattern-match date/time components with first_chunk ([#111](https://github.com/oxc-project/oxc-toml/pull/111))
 - use str::ceil_char_boundary for UTF-8 char width ([#110](https://github.com/oxc-project/oxc-toml/pull/110))
 - inline format args ([#109](https://github.com/oxc-project/oxc-toml/pull/109))
@@ -22,30 +22,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - set rust-version to 1.95.0 ([#104](https://github.com/oxc-project/oxc-toml/pull/104))
 - update snapshot for new toml-test cases ([#105](https://github.com/oxc-project/oxc-toml/pull/105))
 - add Taplo fork notice ([#102](https://github.com/oxc-project/oxc-toml/pull/102))
-- *(deps)* update rust to v1.96.1 ([#101](https://github.com/oxc-project/oxc-toml/pull/101))
-- *(deps)* update rust crate ignore to v0.4.27 ([#100](https://github.com/oxc-project/oxc-toml/pull/100))
-- *(deps)* update oxc-project/security-action action to v1.0.8 ([#93](https://github.com/oxc-project/oxc-toml/pull/93))
+- _(deps)_ update rust to v1.96.1 ([#101](https://github.com/oxc-project/oxc-toml/pull/101))
+- _(deps)_ update rust crate ignore to v0.4.27 ([#100](https://github.com/oxc-project/oxc-toml/pull/100))
+- _(deps)_ update oxc-project/security-action action to v1.0.8 ([#93](https://github.com/oxc-project/oxc-toml/pull/93))
 - standardize rustfmt config
-- *(deps)* update crate-ci/typos action to v1.48.0 ([#99](https://github.com/oxc-project/oxc-toml/pull/99))
+- _(deps)_ update crate-ci/typos action to v1.48.0 ([#99](https://github.com/oxc-project/oxc-toml/pull/99))
 - normalize README sponsor section
 - configure clippy exported api lint ([#96](https://github.com/oxc-project/oxc-toml/pull/96))
 - skip new toml-test invalid duplicate-key cases (11-14) ([#95](https://github.com/oxc-project/oxc-toml/pull/95))
 - add crates environment to release workflow
 - add autofix workflow ([#92](https://github.com/oxc-project/oxc-toml/pull/92))
 - bump cargo-shear to 1.13.1 ([#91](https://github.com/oxc-project/oxc-toml/pull/91))
-- *(deps)* update dprint plugins to v0.22.0 ([#90](https://github.com/oxc-project/oxc-toml/pull/90))
-- *(deps)* update rust crates to v1.48.0 ([#89](https://github.com/oxc-project/oxc-toml/pull/89))
-- *(deps)* update rust crates to v0.4.26 ([#88](https://github.com/oxc-project/oxc-toml/pull/88))
-- *(deps)* update typos to v1.47.2 ([#87](https://github.com/oxc-project/oxc-toml/pull/87))
-- *(deps)* update typos to v1.47.1 ([#86](https://github.com/oxc-project/oxc-toml/pull/86))
-- *(deps)* update crate-ci/typos action to v1.47.0 ([#85](https://github.com/oxc-project/oxc-toml/pull/85))
-- *(deps)* update github actions ([#84](https://github.com/oxc-project/oxc-toml/pull/84))
-- *(deps)* update dependency rust to v1.96.0 ([#83](https://github.com/oxc-project/oxc-toml/pull/83))
-- *(deps)* update crate-ci/typos action to v1.46.3 ([#82](https://github.com/oxc-project/oxc-toml/pull/82))
-- *(deps)* update dependency dprint-markdown to v0.22.1 ([#81](https://github.com/oxc-project/oxc-toml/pull/81))
-- *(deps)* update crate-ci/typos action to v1.46.2 ([#80](https://github.com/oxc-project/oxc-toml/pull/80))
-- *(deps)* update dependency dprint-markdown to v0.22.0 ([#78](https://github.com/oxc-project/oxc-toml/pull/78))
-- *(deps)* update actions/create-github-app-token action to v3.2.0 ([#77](https://github.com/oxc-project/oxc-toml/pull/77))
+- _(deps)_ update dprint plugins to v0.22.0 ([#90](https://github.com/oxc-project/oxc-toml/pull/90))
+- _(deps)_ update rust crates to v1.48.0 ([#89](https://github.com/oxc-project/oxc-toml/pull/89))
+- _(deps)_ update rust crates to v0.4.26 ([#88](https://github.com/oxc-project/oxc-toml/pull/88))
+- _(deps)_ update typos to v1.47.2 ([#87](https://github.com/oxc-project/oxc-toml/pull/87))
+- _(deps)_ update typos to v1.47.1 ([#86](https://github.com/oxc-project/oxc-toml/pull/86))
+- _(deps)_ update crate-ci/typos action to v1.47.0 ([#85](https://github.com/oxc-project/oxc-toml/pull/85))
+- _(deps)_ update github actions ([#84](https://github.com/oxc-project/oxc-toml/pull/84))
+- _(deps)_ update dependency rust to v1.96.0 ([#83](https://github.com/oxc-project/oxc-toml/pull/83))
+- _(deps)_ update crate-ci/typos action to v1.46.3 ([#82](https://github.com/oxc-project/oxc-toml/pull/82))
+- _(deps)_ update dependency dprint-markdown to v0.22.1 ([#81](https://github.com/oxc-project/oxc-toml/pull/81))
+- _(deps)_ update crate-ci/typos action to v1.46.2 ([#80](https://github.com/oxc-project/oxc-toml/pull/80))
+- _(deps)_ update dependency dprint-markdown to v0.22.0 ([#78](https://github.com/oxc-project/oxc-toml/pull/78))
+- _(deps)_ update actions/create-github-app-token action to v3.2.0 ([#77](https://github.com/oxc-project/oxc-toml/pull/77))
 
 ## [0.14.4](https://github.com/oxc-project/oxc-toml/compare/v0.14.3...v0.14.4) - 2026-05-14
 
