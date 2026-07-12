@@ -148,7 +148,7 @@ impl Default for Options {
 }
 
 impl Options {
-    fn newline(&self) -> &'static str {
+    const fn newline(&self) -> &'static str {
         if self.crlf { "\r\n" } else { "\n" }
     }
 
@@ -156,7 +156,7 @@ impl Options {
         std::iter::repeat_n(self.newline(), usize::min(count, self.allowed_blank_lines + 1))
     }
 
-    fn should_align_comments(&self, comment_count: usize) -> bool {
+    const fn should_align_comments(&self, comment_count: usize) -> bool {
         (comment_count != 1 || self.align_single_comments) && self.align_comments
     }
 }
@@ -1134,7 +1134,7 @@ fn format_rows<R, S>(
 /// So we check if the newlines are followed by whitespace,
 /// then newlines again, and return the count here,
 /// and we can add these values up.
-fn dangling_newlines(t: &SyntaxToken, source: &str) -> Option<usize> {
+const fn dangling_newlines(t: &SyntaxToken, source: &str) -> Option<usize> {
     // TODO: This function needs sibling traversal which we don't have yet
     // For now, just return None to disable this optimization
     // The formatter will still work correctly, just potentially with extra newlines

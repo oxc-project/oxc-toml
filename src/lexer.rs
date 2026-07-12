@@ -10,7 +10,7 @@ pub struct Lexer<'source, Token> {
 }
 
 impl<'source, Token> Lexer<'source, Token> {
-    pub fn new(source: &'source str) -> Self {
+    pub const fn new(source: &'source str) -> Self {
         Self { source, pos: 0, current_span: 0..0, _phantom: std::marker::PhantomData }
     }
 

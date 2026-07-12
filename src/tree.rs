@@ -10,7 +10,7 @@ use std::ops::Range;
 pub type TextRange = Range<u32>;
 
 #[inline]
-pub fn text_range(start: usize, end: usize) -> TextRange {
+pub const fn text_range(start: usize, end: usize) -> TextRange {
     start as u32..end as u32
 }
 
@@ -44,7 +44,7 @@ pub struct Token {
 }
 
 impl Node {
-    pub fn kind(&self) -> SyntaxKind {
+    pub const fn kind(&self) -> SyntaxKind {
         self.kind
     }
 
@@ -82,7 +82,7 @@ impl Node {
 }
 
 impl Token {
-    pub fn kind(&self) -> SyntaxKind {
+    pub const fn kind(&self) -> SyntaxKind {
         self.kind
     }
 
@@ -97,21 +97,21 @@ impl Token {
 }
 
 impl Element {
-    pub fn kind(&self) -> SyntaxKind {
+    pub const fn kind(&self) -> SyntaxKind {
         match self {
             Element::Node(n) => n.kind(),
             Element::Token(t) => t.kind(),
         }
     }
 
-    pub fn as_node(&self) -> Option<&Node> {
+    pub const fn as_node(&self) -> Option<&Node> {
         match self {
             Element::Node(n) => Some(n),
             Element::Token(_) => None,
         }
     }
 
-    pub fn as_token(&self) -> Option<&Token> {
+    pub const fn as_token(&self) -> Option<&Token> {
         match self {
             Element::Node(_) => None,
             Element::Token(t) => Some(t),
@@ -137,7 +137,7 @@ impl Element {
         }
     }
 
-    pub fn span(&self) -> &TextRange {
+    pub const fn span(&self) -> &TextRange {
         match self {
             Element::Node(n) => &n.span,
             Element::Token(t) => &t.span,
@@ -255,7 +255,7 @@ impl TreeBuilder {
 
 impl SyntaxTree {
     /// Get the root node
-    pub fn root(&self) -> &Node {
+    pub const fn root(&self) -> &Node {
         &self.root
     }
 

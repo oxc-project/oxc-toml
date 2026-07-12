@@ -166,17 +166,17 @@ impl<'p> Parser<'p> {
     }
 
     #[inline]
-    fn whitelist_token(&mut self, token: SyntaxKind) {
+    const fn whitelist_token(&mut self, token: SyntaxKind) {
         self.error_whitelist |= token as u16;
     }
 
     #[inline]
-    fn blacklist_token(&mut self, token: SyntaxKind) {
+    const fn blacklist_token(&mut self, token: SyntaxKind) {
         self.error_whitelist &= !(token as u16);
     }
 
     #[inline]
-    fn whitelisted(&self, token: SyntaxKind) -> bool {
+    const fn whitelisted(&self, token: SyntaxKind) -> bool {
         self.error_whitelist & token as u16 != 0
     }
 
