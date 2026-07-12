@@ -23,7 +23,7 @@ pub struct Error {
 
 impl core::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} ({:?})", &self.message, &self.range)
+        write!(f, "{} ({:?})", self.message, self.range)
     }
 }
 impl std::error::Error for Error {}
