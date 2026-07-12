@@ -490,33 +490,30 @@ fn try_lex_datetime(input: &str) -> Option<(SyntaxKind, usize)> {
 }
 
 fn try_match_date(input: &str) -> Option<usize> {
-    let bytes = input.as_bytes();
-    if bytes.len() < 10 {
-        return None;
-    }
-
     // YYYY-MM-DD with validation
-    if !bytes[0].is_ascii_digit()
-        || !bytes[1].is_ascii_digit()
-        || !bytes[2].is_ascii_digit()
-        || !bytes[3].is_ascii_digit()
-        || bytes[4] != b'-'
-        || !bytes[5].is_ascii_digit()
-        || !bytes[6].is_ascii_digit()
-        || bytes[7] != b'-'
-        || !bytes[8].is_ascii_digit()
-        || !bytes[9].is_ascii_digit()
-    {
+    let &[
+        y3 @ b'0'..=b'9',
+        y2 @ b'0'..=b'9',
+        y1 @ b'0'..=b'9',
+        y0 @ b'0'..=b'9',
+        b'-',
+        m1 @ b'0'..=b'9',
+        m0 @ b'0'..=b'9',
+        b'-',
+        d1 @ b'0'..=b'9',
+        d0 @ b'0'..=b'9',
+    ] = input.as_bytes().first_chunk()?
+    else {
         return None;
-    }
+    };
 
     // Parse year, month, day
-    let year = (bytes[0] - b'0') as u32 * 1000
-        + (bytes[1] - b'0') as u32 * 100
-        + (bytes[2] - b'0') as u32 * 10
-        + (bytes[3] - b'0') as u32;
-    let month = (bytes[5] - b'0') as u32 * 10 + (bytes[6] - b'0') as u32;
-    let day = (bytes[8] - b'0') as u32 * 10 + (bytes[9] - b'0') as u32;
+    let year = (y3 - b'0') as u32 * 1000
+        + (y2 - b'0') as u32 * 100
+        + (y1 - b'0') as u32 * 10
+        + (y0 - b'0') as u32;
+    let month = (m1 - b'0') as u32 * 10 + (m0 - b'0') as u32;
+    let day = (d1 - b'0') as u32 * 10 + (d0 - b'0') as u32;
 
     // Validate month (01-12)
     if !(1..=12).contains(&month) {
@@ -547,26 +544,25 @@ fn try_match_date(input: &str) -> Option<usize> {
 
 fn try_match_time(input: &str) -> Option<usize> {
     let bytes = input.as_bytes();
-    if bytes.len() < 8 {
-        return None;
-    }
 
     // HH:MM:SS with validation
-    if !bytes[0].is_ascii_digit()
-        || !bytes[1].is_ascii_digit()
-        || bytes[2] != b':'
-        || !bytes[3].is_ascii_digit()
-        || !bytes[4].is_ascii_digit()
-        || bytes[5] != b':'
-        || !bytes[6].is_ascii_digit()
-        || !bytes[7].is_ascii_digit()
-    {
+    let &[
+        h1 @ b'0'..=b'9',
+        h0 @ b'0'..=b'9',
+        b':',
+        m1 @ b'0'..=b'9',
+        m0 @ b'0'..=b'9',
+        b':',
+        s1 @ b'0'..=b'9',
+        s0 @ b'0'..=b'9',
+    ] = bytes.first_chunk()?
+    else {
         return None;
-    }
+    };
 
-    let hour = (bytes[0] - b'0') as u32 * 10 + (bytes[1] - b'0') as u32;
-    let minute = (bytes[3] - b'0') as u32 * 10 + (bytes[4] - b'0') as u32;
-    let second = (bytes[6] - b'0') as u32 * 10 + (bytes[7] - b'0') as u32;
+    let hour = (h1 - b'0') as u32 * 10 + (h0 - b'0') as u32;
+    let minute = (m1 - b'0') as u32 * 10 + (m0 - b'0') as u32;
+    let second = (s1 - b'0') as u32 * 10 + (s0 - b'0') as u32;
 
     // Validate ranges: hour 00-23, minute 00-59, second 00-59
     if hour > 23 || minute > 59 || second > 59 {
@@ -590,24 +586,21 @@ fn try_match_time(input: &str) -> Option<usize> {
 }
 
 fn try_match_timezone(input: &str) -> Option<usize> {
-    let bytes = input.as_bytes();
-    if bytes.len() < 6 {
-        return None;
-    }
-
     // +HH:MM or -HH:MM with validation
-    if !(bytes[0] == b'+' || bytes[0] == b'-')
-        || !bytes[1].is_ascii_digit()
-        || !bytes[2].is_ascii_digit()
-        || bytes[3] != b':'
-        || !bytes[4].is_ascii_digit()
-        || !bytes[5].is_ascii_digit()
-    {
+    let &[
+        b'+' | b'-',
+        h1 @ b'0'..=b'9',
+        h0 @ b'0'..=b'9',
+        b':',
+        m1 @ b'0'..=b'9',
+        m0 @ b'0'..=b'9',
+    ] = input.as_bytes().first_chunk()?
+    else {
         return None;
-    }
+    };
 
-    let hour = (bytes[1] - b'0') as u32 * 10 + (bytes[2] - b'0') as u32;
-    let minute = (bytes[4] - b'0') as u32 * 10 + (bytes[5] - b'0') as u32;
+    let hour = (h1 - b'0') as u32 * 10 + (h0 - b'0') as u32;
+    let minute = (m1 - b'0') as u32 * 10 + (m0 - b'0') as u32;
 
     // Validate timezone offset: hour 00-23, minute 00-59
     if hour > 23 || minute > 59 {
