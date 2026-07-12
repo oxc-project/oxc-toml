@@ -129,7 +129,7 @@ impl<'p> Parser<'p> {
 
         let err = Error { range: text_range(span.start, span.end), message: message.into() };
 
-        let same_error = self.errors.last().map(|e| e.range == err.range).unwrap_or(false);
+        let same_error = self.errors.last().is_some_and(|e| e.range == err.range);
 
         if !same_error {
             self.add_error(&Error {
