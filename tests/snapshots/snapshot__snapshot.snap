@@ -1246,6 +1246,50 @@ Original:
 Formatted:
 '' = 0
 
+## key/empty-04.toml
+
+Original:
+tbl-1     = {"" = 1}
+tbl-2     = {"" = {"" = 1}}
+arr-tbl-1 = [{"" = 2}]
+arr-tbl-2 = [[{"" = 2}]]
+
+Formatted:
+tbl-1 = { "" = 1 }
+tbl-2 = { "" = { "" = 1 } }
+arr-tbl-1 = [{ "" = 2 }]
+arr-tbl-2 = [[{ "" = 2 }]]
+
+## key/empty-05.toml
+
+Original:
+tbl-1     = {
+	"" = 1,
+}
+tbl-2 = {
+	"" = {
+		"" = 1,
+	},
+}
+arr-tbl-1 = [
+	{
+		"" = 2,
+	},
+]
+arr-tbl-2 = [
+	[
+		{
+			"" = 2,
+		},
+	],
+]
+
+Formatted:
+tbl-1 = { "" = 1 }
+tbl-2 = { "" = { "" = 1 } }
+arr-tbl-1 = [{ "" = 2 }]
+arr-tbl-2 = [[{ "" = 2 }]]
+
 ## key/equals-nospace.toml
 
 Original:
