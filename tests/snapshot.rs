@@ -36,7 +36,7 @@ fn snapshot() {
         let formatted = format(&original, Options::default());
 
         // Format entry with clear comparison
-        snapshot.push_str(&format!("## {}\n\n", relative_path));
+        snapshot.push_str(&format!("## {relative_path}\n\n"));
 
         // If content is identical, show once
         if original == formatted {

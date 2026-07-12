@@ -51,7 +51,7 @@ fn main() {
         let entry = match entry {
             Ok(e) => e,
             Err(err) => {
-                eprintln!("Error walking directory: {}", err);
+                eprintln!("Error walking directory: {err}");
                 error_count += 1;
                 continue;
             }
@@ -93,8 +93,8 @@ fn main() {
     }
 
     println!("\nSummary:");
-    println!("  Formatted: {}", formatted_count);
-    println!("  Errors: {}", error_count);
+    println!("  Formatted: {formatted_count}");
+    println!("  Errors: {error_count}");
 
     if error_count > 0 {
         std::process::exit(1);
