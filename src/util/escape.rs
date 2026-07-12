@@ -86,23 +86,8 @@ impl<'source> LexerToken<'source> for Escape {
             return Some((Unknown, 2));
         }
 
-        // Unescaped character - need to handle UTF-8 here
-        let bytes = input.as_bytes();
-        if let Some(&first_byte) = bytes.first() {
-            // Determine UTF-8 sequence length from first byte
-            let len = if first_byte < 0x80 {
-                1 // ASCII
-            } else if first_byte < 0xE0 {
-                2 // 2-byte sequence
-            } else if first_byte < 0xF0 {
-                3 // 3-byte sequence
-            } else {
-                4 // 4-byte sequence
-            };
-            return Some((UnEscaped, len));
-        }
-
-        None
+        // Unescaped character - consume one UTF-8 character
+        if input.is_empty() { None } else { Some((UnEscaped, input.ceil_char_boundary(1))) }
     }
 }
 
