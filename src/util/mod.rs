@@ -82,6 +82,6 @@ pub(crate) mod allowed_chars {
     }
 }
 
-pub fn overlaps(range: TextRange, other: TextRange) -> bool {
+pub const fn overlaps(range: TextRange, other: TextRange) -> bool {
     range.start < other.end && other.start < range.end
 }

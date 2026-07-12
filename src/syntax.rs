@@ -192,19 +192,19 @@ fn lex_multi_line_string_literal(input: &str) -> Option<usize> {
 }
 
 // Helper functions for matching patterns
-fn is_whitespace(b: u8) -> bool {
+const fn is_whitespace(b: u8) -> bool {
     b == b' ' || b == b'\t'
 }
 
-fn is_ident_char(b: u8) -> bool {
+const fn is_ident_char(b: u8) -> bool {
     b.is_ascii_alphanumeric() || b == b'_' || b == b'-'
 }
 
-fn is_ident_with_glob_char(b: u8) -> bool {
+const fn is_ident_with_glob_char(b: u8) -> bool {
     is_ident_char(b) || b == b'*' || b == b'?'
 }
 
-fn is_hex_digit(b: u8) -> bool {
+const fn is_hex_digit(b: u8) -> bool {
     b.is_ascii_hexdigit()
 }
 
