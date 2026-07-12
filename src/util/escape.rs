@@ -124,12 +124,9 @@ pub fn check_escape(s: &str) -> Result<(), Vec<usize>> {
             Backslash => {}
             Newline => {}
             Unicode => {
-                let char_val = match u32::from_str_radix(&lexer.slice()[2..], 16) {
-                    Ok(v) => v,
-                    Err(_) => {
-                        invalid.push(lexer.span().start);
-                        continue;
-                    }
+                let Ok(char_val) = u32::from_str_radix(&lexer.slice()[2..], 16) else {
+                    invalid.push(lexer.span().start);
+                    continue;
                 };
 
                 match std::char::from_u32(char_val) {
@@ -140,12 +137,9 @@ pub fn check_escape(s: &str) -> Result<(), Vec<usize>> {
                 };
             }
             UnicodeLarge => {
-                let char_val = match u32::from_str_radix(&lexer.slice()[2..], 16) {
-                    Ok(v) => v,
-                    Err(_) => {
-                        invalid.push(lexer.span().start);
-                        continue;
-                    }
+                let Ok(char_val) = u32::from_str_radix(&lexer.slice()[2..], 16) else {
+                    invalid.push(lexer.span().start);
+                    continue;
                 };
 
                 match std::char::from_u32(char_val) {

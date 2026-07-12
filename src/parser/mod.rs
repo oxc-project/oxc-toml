@@ -418,14 +418,11 @@ impl<'p> Parser<'p> {
 
         let mut after_period = false;
         loop {
-            let t = match self.get_token() {
-                Ok(token) => token,
-                Err(_) => {
-                    if !after_period {
-                        return Ok(());
-                    }
-                    return self.error("unexpected end of input");
+            let Ok(t) = self.get_token() else {
+                if !after_period {
+                    return Ok(());
                 }
+                return self.error("unexpected end of input");
             };
 
             match t {
@@ -569,9 +566,8 @@ impl<'p> Parser<'p> {
     }
 
     fn parse_value(&mut self) -> ParserResult<()> {
-        let t = match self.get_token() {
-            Ok(t) => t,
-            Err(_) => return self.error("expected value"),
+        let Ok(t) = self.get_token() else {
+            return self.error("expected value");
         };
 
         match t {
@@ -757,9 +753,8 @@ impl<'p> Parser<'p> {
         let mut was_newline = false;
 
         loop {
-            let t = match self.get_token() {
-                Ok(t) => t,
-                Err(_) => return self.report_error(r#"expected "}""#),
+            let Ok(t) = self.get_token() else {
+                return self.report_error(r#"expected "}""#);
             };
 
             match t {
@@ -817,12 +812,9 @@ impl<'p> Parser<'p> {
         let mut first = true;
         let mut comma_last = false;
         loop {
-            let t = match self.get_token() {
-                Ok(t) => t,
-                Err(_) => {
-                    let _ = self.report_error("unexpected EOF");
-                    return Err(());
-                }
+            let Ok(t) = self.get_token() else {
+                let _ = self.report_error("unexpected EOF");
+                return Err(());
             };
 
             match t {
