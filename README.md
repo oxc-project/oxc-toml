@@ -67,10 +67,10 @@ If you need these features, please use the original [Taplo project](https://gith
 
 This project maintains the original MIT License from Taplo. See [LICENSE](LICENSE) for details.
 
-## ❤ Who's [Sponsoring Oxc](https://github.com/sponsors/Boshen)?
+# [Sponsored By](https://oxc.rs/sponsor)
 
 <p align="center">
-  <a href="https://github.com/sponsors/Boshen">
-    <img src="https://raw.githubusercontent.com/Boshen/sponsors/main/sponsors.svg" alt="Our sponsors" />
+  <a href="https://oxc.rs/sponsor">
+    <img src="https://raw.githubusercontent.com/oxc-project/sponsors/main/sponsors.svg" alt="Our sponsors" />
   </a>
 </p>
