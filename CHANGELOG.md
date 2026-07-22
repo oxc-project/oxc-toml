@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.6](https://github.com/oxc-project/oxc-toml/compare/v0.14.5...v0.14.6) - 2026-07-22
+
+### Other
+
+- _(semgrep)_ add scan workflow ([#118](https://github.com/oxc-project/oxc-toml/pull/118))
+- _(deps)_ update dependency dprint-json to v0.23.0 ([#113](https://github.com/oxc-project/oxc-toml/pull/113))
+- _(deps)_ update rust crates ([#117](https://github.com/oxc-project/oxc-toml/pull/117))
+- _(deps)_ update dependency rust to v1.97.1 ([#116](https://github.com/oxc-project/oxc-toml/pull/116))
+- update sponsor section
+
 ## [0.14.5](https://github.com/oxc-project/oxc-toml/compare/v0.14.4...v0.14.5) - 2026-07-12
 
 ### Other
