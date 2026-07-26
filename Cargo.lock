@@ -130,9 +130,9 @@ checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
 
 [[package]]
 name = "ignore"
-version = "0.4.30"
+version = "0.4.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b009b6744c1445efd7244084e25e498636412effb6760b55067553baa925cc7"
+checksum = "7f8a7b8211e695a1d0cd91cace480d4d0bd57667ab10277cc412c5f7f4884f83"
 dependencies = [
  "crossbeam-deque",
  "globset",
