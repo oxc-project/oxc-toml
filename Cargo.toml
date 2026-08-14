@@ -22,3 +22,9 @@ ignore = "0.4"
 insta = "1.45"
 toml = "1.0.0"
 walkdir = "2"
+
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
