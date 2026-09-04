@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.7](https://github.com/oxc-project/oxc-toml/compare/v0.14.6...v0.14.7) - 2026-09-04
+
+### Other
+
+- reduce Rust dev debug info ([#127](https://github.com/oxc-project/oxc-toml/pull/127))
+
 ## [0.14.6](https://github.com/oxc-project/oxc-toml/compare/v0.14.5...v0.14.6) - 2026-07-27
 
 ### Other
