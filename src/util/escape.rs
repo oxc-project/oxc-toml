@@ -97,7 +97,7 @@ impl<'source> LexerToken<'source> for Escape {
 
         // Unknown escape sequence
         if input.starts_with('\\') && input.len() >= 2 {
-            return Some((Unknown, 2));
+            return Some((Unknown, input.ceil_char_boundary(2)));
         }
 
         // Unescaped character - consume one UTF-8 character
