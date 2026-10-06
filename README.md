@@ -16,11 +16,14 @@ This library provides TOML formatting capabilities while preserving comments, wh
 ## Usage
 
 ```rust
-use oxc_toml::{format, Options};
+use oxc_toml::{format, parse, Options};
 
 const SOURCE: &str = "value=1\n[table]\nstring='some string'";
 
-let formatted = format(SOURCE, Options::default());
+let parsed = parse(SOURCE);
+assert!(parsed.errors.is_empty());
+
+let formatted = format(&parsed, Options::default());
 ```
 
 ### Examples

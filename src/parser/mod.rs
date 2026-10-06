@@ -1,10 +1,9 @@
-#![allow(clippy::useless_conversion)]
 //! TOML document to syntax tree parsing.
 
 use crate::{
     lexer::Lexer,
     syntax::{SyntaxKind, SyntaxKind::*},
-    tree::{Node, SyntaxTree, TextRange, TreeBuilder, text_range},
+    tree::{Node, TextRange, TreeBuilder, text_range},
     util::{allowed_chars, check_escape},
 };
 
@@ -39,24 +38,15 @@ impl std::error::Error for Error {}
 /// These will also be reported as syntax errors.
 ///
 /// This does not check for semantic errors such as duplicate keys.
-pub fn parse(source: &str) -> Parse {
-    let (root, errors) = parse_root(source);
-    Parse { tree: SyntaxTree { root, source: source.to_string() }, errors }
-}
-
-/// Parse a TOML document, returning just the root node and errors without
-/// copying the source. Used internally by the formatter to avoid an unnecessary
-/// allocation when the caller already owns the source.
-pub(crate) fn parse_root(source: &str) -> (crate::tree::Node, Vec<Error>) {
-    Parser::new(source).parse()
+pub fn parse(source: &str) -> Parse<'_> {
+    let (root, errors) = Parser::new(source).parse();
+    Parse { root, source, errors }
 }
 
 /// A hand-written parser that uses a custom lexer
 /// to tokenize the source, then constructs a syntax tree from them.
-pub(crate) struct Parser<'p> {
+struct Parser<'p> {
     skip_whitespace: bool,
-    // Allow glob patterns as keys and using [] instead of dots.
-    key_pattern_syntax: bool,
     current_token: Option<SyntaxKind>,
 
     // These tokens are not consumed on errors.
@@ -80,23 +70,6 @@ pub(crate) struct Parser<'p> {
     errors: Vec<Error>,
 }
 
-impl Parser<'_> {
-    /// Required for patch syntax
-    /// and key matches.
-    ///
-    /// It allows a part of glob syntax in identifiers as well.
-    #[allow(dead_code)]
-    pub(crate) fn parse_key_only(mut self, source: &str) -> Parse {
-        self.key_pattern_syntax = true;
-        let _ = with_node!(self.builder, KEY, self.parse_key());
-
-        Parse {
-            tree: SyntaxTree { root: self.builder.finish_root(), source: source.to_string() },
-            errors: self.errors,
-        }
-    }
-}
-
 /// This is just a convenience type during parsing.
 /// It allows using "?", making the code cleaner.
 type ParserResult<T> = Result<T, ()>;
@@ -106,11 +79,10 @@ type ParserResult<T> = Result<T, ()>;
 // this probably has to be rewritten into a state machine
 // that contains minimal function calls.
 impl<'p> Parser<'p> {
-    pub(crate) fn new(source: &'p str) -> Self {
+    fn new(source: &'p str) -> Self {
         Parser {
             current_token: None,
             skip_whitespace: true,
-            key_pattern_syntax: false,
             error_whitelist: 0,
             lexer: Lexer::new(source),
             builder: TreeBuilder::new(),
@@ -434,22 +406,6 @@ impl<'p> Parser<'p> {
                         after_period = true;
                     }
                 }
-                BRACKET_START if self.key_pattern_syntax => {
-                    self.step();
-
-                    match self.parse_ident() {
-                        Ok(_) => {}
-                        Err(_) => return self.error("expected identifier"),
-                    }
-
-                    let token = self.get_token()?;
-
-                    if !matches!(token, BRACKET_END) {
-                        self.error(r#"expected "]""#)?;
-                    }
-                    self.step();
-                    after_period = false;
-                }
                 _ => {
                     if after_period {
                         match self.parse_ident() {
@@ -457,8 +413,6 @@ impl<'p> Parser<'p> {
                             Err(_) => return self.report_error("expected identifier"),
                         }
                         after_period = false;
-                    } else if self.key_pattern_syntax {
-                        return self.error("unexpected identifier");
                     } else {
                         break;
                     }
@@ -473,13 +427,6 @@ impl<'p> Parser<'p> {
         let t = self.get_token()?;
         match t {
             IDENT => self.token(),
-            IDENT_WITH_GLOB => {
-                if self.key_pattern_syntax {
-                    self.token_as(IDENT)
-                } else {
-                    self.error("expected identifier")
-                }
-            }
             INTEGER_HEX | INTEGER_BIN | INTEGER_OCT => self.token_as(IDENT),
             INTEGER => {
                 if self.lexer.slice().starts_with('+') {
@@ -890,17 +837,11 @@ fn is_digit_byte(b: u8, radix: u32) -> bool {
 }
 
 /// The final results of a parsing.
-/// It contains the green tree, and
+/// It contains the syntax tree, the source it borrows, and
 /// the errors that occurred during parsing.
 #[derive(Debug, Clone)]
-pub struct Parse {
-    pub tree: SyntaxTree,
+pub struct Parse<'a> {
+    pub(crate) root: Node,
+    pub(crate) source: &'a str,
     pub errors: Vec<Error>,
-}
-
-impl Parse {
-    /// Turn the parse into a syntax tree.
-    pub fn into_syntax(self) -> SyntaxTree {
-        self.tree
-    }
 }

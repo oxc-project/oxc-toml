@@ -14,13 +14,6 @@ pub const fn text_range(start: usize, end: usize) -> TextRange {
     start as u32..end as u32
 }
 
-/// A complete syntax tree with source text
-#[derive(Debug, Clone)]
-pub struct SyntaxTree {
-    pub root: Node,
-    pub source: String,
-}
-
 /// A syntax tree node (e.g., ENTRY, TABLE_HEADER, etc.)
 #[derive(Debug, Clone)]
 pub struct Node {
@@ -75,10 +68,6 @@ impl Node {
     pub fn descendants_with_tokens(&self) -> impl Iterator<Item = &Element> {
         self.descendants()
     }
-
-    pub fn to_string(&self, source: &str) -> String {
-        self.text(source).to_string()
-    }
 }
 
 impl Token {
@@ -89,10 +78,6 @@ impl Token {
     #[inline]
     pub fn text<'a>(&self, source: &'a str) -> &'a str {
         &source[self.span.start as usize..self.span.end as usize]
-    }
-
-    pub fn to_string(&self, source: &str) -> String {
-        self.text(source).to_string()
     }
 }
 
@@ -108,13 +93,6 @@ impl Element {
         match self {
             Element::Node(n) => Some(n),
             Element::Token(_) => None,
-        }
-    }
-
-    pub const fn as_token(&self) -> Option<&Token> {
-        match self {
-            Element::Node(_) => None,
-            Element::Token(t) => Some(t),
         }
     }
 
@@ -134,13 +112,6 @@ impl Element {
         match self {
             Element::Node(n) => n.span.clone(),
             Element::Token(t) => t.span.clone(),
-        }
-    }
-
-    pub const fn span(&self) -> &TextRange {
-        match self {
-            Element::Node(n) => &n.span,
-            Element::Token(t) => &t.span,
         }
     }
 }
@@ -250,17 +221,5 @@ impl TreeBuilder {
             Some(Element::Node(n)) => n,
             _ => panic!("TreeBuilder finished without root node"),
         }
-    }
-}
-
-impl SyntaxTree {
-    /// Get the root node
-    pub const fn root(&self) -> &Node {
-        &self.root
-    }
-
-    /// Get the source text
-    pub fn source(&self) -> &str {
-        &self.source
     }
 }

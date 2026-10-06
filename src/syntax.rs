@@ -12,9 +12,6 @@ pub enum SyntaxKind {
     NEWLINE,
     COMMENT,
     IDENT,
-    /// Not part of the regular TOML syntax, only used to allow
-    /// glob patterns in keys.
-    IDENT_WITH_GLOB,
     PERIOD,
     COMMA,
     EQ,
@@ -200,10 +197,6 @@ const fn is_ident_char(b: u8) -> bool {
     b.is_ascii_alphanumeric() || b == b'_' || b == b'-'
 }
 
-const fn is_ident_with_glob_char(b: u8) -> bool {
-    is_ident_char(b) || b == b'*' || b == b'?'
-}
-
 const fn is_hex_digit(b: u8) -> bool {
     b.is_ascii_hexdigit()
 }
@@ -383,12 +376,6 @@ impl<'source> LexerToken<'source> for SyntaxKind {
         if first.is_ascii_alphanumeric() || first == b'_' || first == b'-' {
             let len = bytes.iter().take_while(|&&b| is_ident_char(b)).count();
             return Some((SyntaxKind::IDENT, len));
-        }
-
-        // Identifier with glob
-        if first == b'*' || first == b'?' {
-            let len = bytes.iter().take_while(|&&b| is_ident_with_glob_char(b)).count();
-            return Some((SyntaxKind::IDENT_WITH_GLOB, len));
         }
 
         None

@@ -4,6 +4,7 @@
 //! contain invalid syntax. In that case the invalid part is skipped.
 
 use crate::{
+    parser::Parse,
     syntax::{SyntaxElement, SyntaxKind::*, SyntaxNode, SyntaxToken},
     tree::{Element, TextRange},
     util::overlaps,
@@ -194,21 +195,14 @@ impl Context {
     }
 }
 
-/// Parses then formats a TOML document, skipping ranges that contain syntax errors.
-pub fn format(src: &str, options: Options) -> String {
-    let (root, errors) = crate::parser::parse_root(src);
-
+/// Formats a parsed TOML document, skipping ranges that contain syntax errors.
+pub fn format(parse: &Parse, options: Options) -> String {
     let ctx = Context {
-        errors: errors.iter().map(|err| err.range.clone()).collect(),
+        errors: parse.errors.iter().map(|err| err.range.clone()).collect(),
         ..Context::default()
     };
 
-    format_impl(&root, src, options, ctx)
-}
-
-fn format_impl(node: &SyntaxNode, source: &str, options: Options, context: Context) -> String {
-    assert!(node.kind() == ROOT);
-    let mut formatted = format_root(node, source, &options, &context);
+    let mut formatted = format_root(&parse.root, parse.source, &options, &ctx);
 
     if formatted.ends_with("\r\n") {
         formatted.truncate(formatted.len() - 2);
