@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0](https://github.com/oxc-project/oxc-toml/compare/v0.14.6...v0.15.0) - 2026-10-06
+
+### Added
+
+- [**breaking**] make `format()` take `parse()`d output instead of source ([#142](https://github.com/oxc-project/oxc-toml/pull/142))
+- complete TOML 1.1 support ([#141](https://github.com/oxc-project/oxc-toml/pull/141))
+
+### Fixed
+
+- avoid panic on unknown escape followed by multibyte char ([#143](https://github.com/oxc-project/oxc-toml/pull/143))
+
+### Other
+
+- _(deps)_ update rust crate toml to v1.1.6 ([#136](https://github.com/oxc-project/oxc-toml/pull/136))
+- _(deps)_ update rust crate toml to v1.1.5 ([#135](https://github.com/oxc-project/oxc-toml/pull/135))
+- reduce Rust dev debug info ([#127](https://github.com/oxc-project/oxc-toml/pull/127))
+
 ## [0.14.6](https://github.com/oxc-project/oxc-toml/compare/v0.14.5...v0.14.6) - 2026-07-27
 
 ### Other
