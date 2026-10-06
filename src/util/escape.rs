@@ -7,8 +7,10 @@ use crate::lexer::{Lexer, LexerToken};
 /// \n         - linefeed        (U+000A)
 /// \f         - form feed       (U+000C)
 /// \r         - carriage return (U+000D)
+/// \e         - escape          (U+001B)
 /// \"         - quote           (U+0022)
 /// \\         - backslash       (U+005C)
+/// \xHH       - unicode         (U+00HH)
 /// \uXXXX     - unicode         (U+XXXX)
 /// \UXXXXXXXX - unicode         (U+XXXXXXXX)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -19,8 +21,10 @@ pub enum Escape {
     LineFeed,
     FormFeed,
     CarriageReturn,
+    Esc,
     Quote,
     Backslash,
+    Hex,
     Unicode,
     UnicodeLarge,
     Unknown,
@@ -45,6 +49,9 @@ impl<'source> LexerToken<'source> for Escape {
         if input.starts_with("\\r") {
             return Some((CarriageReturn, 2));
         }
+        if input.starts_with("\\e") {
+            return Some((Esc, 2));
+        }
         if input.starts_with("\\\"") {
             return Some((Quote, 2));
         }
@@ -63,6 +70,13 @@ impl<'source> LexerToken<'source> for Escape {
             if after_ws.starts_with("\r\n") {
                 return Some((Newline, 1 + ws_len + 2));
             }
+        }
+
+        // Hex escape \xHH
+        if let Some(hex) = input.strip_prefix("\\x").and_then(|s| s.as_bytes().first_chunk::<2>())
+            && hex.iter().all(u8::is_ascii_hexdigit)
+        {
+            return Some((Hex, 4));
         }
 
         // Unicode escape \uXXXX
@@ -100,14 +114,8 @@ pub fn check_escape(s: &str) -> Result<(), Vec<usize>> {
     while let Some(t) = lexer.next() {
         let t = t.unwrap_or(UnEscaped);
         match t {
-            Backspace => {}
-            Tab => {}
-            LineFeed => {}
-            FormFeed => {}
-            CarriageReturn => {}
-            Quote => {}
-            Backslash => {}
-            Newline => {}
+            Backspace | Tab | LineFeed | FormFeed | CarriageReturn | Esc | Quote | Backslash
+            | Hex | Newline => {}
             Unicode => {
                 let Ok(char_val) = u32::from_str_radix(&lexer.slice()[2..], 16) else {
                     invalid.push(lexer.span().start);

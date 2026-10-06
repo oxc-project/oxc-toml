@@ -203,7 +203,6 @@ dependencies = [
  "ignore",
  "insta",
  "toml",
- "walkdir",
 ]
 
 [[package]]
