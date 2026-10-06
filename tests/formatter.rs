@@ -54,3 +54,8 @@ fn test_bare_key_starting_with_digit() {
         assert_eq!(formatted, input, "input: {input:?}");
     }
 }
+
+#[test]
+fn test_unknown_escape_with_multibyte_char() {
+    assert!(!parse("a = \"\\é\"\n").errors.is_empty());
+}
