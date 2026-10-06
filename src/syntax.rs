@@ -545,27 +545,28 @@ fn try_match_date(input: &str) -> Option<usize> {
 fn try_match_time(input: &str) -> Option<usize> {
     let bytes = input.as_bytes();
 
-    // HH:MM:SS with validation
-    let &[
-        h1 @ b'0'..=b'9',
-        h0 @ b'0'..=b'9',
-        b':',
-        m1 @ b'0'..=b'9',
-        m0 @ b'0'..=b'9',
-        b':',
-        s1 @ b'0'..=b'9',
-        s0 @ b'0'..=b'9',
-    ] = bytes.first_chunk()?
+    // HH:MM with validation
+    let &[h1 @ b'0'..=b'9', h0 @ b'0'..=b'9', b':', m1 @ b'0'..=b'9', m0 @ b'0'..=b'9'] =
+        bytes.first_chunk()?
     else {
         return None;
     };
 
     let hour = (h1 - b'0') as u32 * 10 + (h0 - b'0') as u32;
     let minute = (m1 - b'0') as u32 * 10 + (m0 - b'0') as u32;
-    let second = (s1 - b'0') as u32 * 10 + (s0 - b'0') as u32;
 
-    // Validate ranges: hour 00-23, minute 00-59, second 00-59
-    if hour > 23 || minute > 59 || second > 59 {
+    // Validate ranges: hour 00-23, minute 00-59
+    if hour > 23 || minute > 59 {
+        return None;
+    }
+
+    // Optional seconds (TOML 1.1.0)
+    let Some(&[b':', s1 @ b'0'..=b'9', s0 @ b'0'..=b'9']) = bytes[5..].first_chunk() else {
+        return Some(5);
+    };
+
+    // Validate range: second 00-59
+    if (s1 - b'0') as u32 * 10 + (s0 - b'0') as u32 > 59 {
         return None;
     }
 

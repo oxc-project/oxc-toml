@@ -2,9 +2,9 @@ use std::fs;
 use std::path::Path;
 
 use oxc_toml::{Options, format, parse};
-use walkdir::WalkDir;
 
-const TOML_TEST_DIR: &str = "toml-test/tests";
+mod common;
+use common::toml_files;
 
 /// Compare two TOML values, treating NaN as equal to NaN.
 ///
@@ -36,7 +36,7 @@ fn values_equal(a: &toml::Value, b: &toml::Value) -> bool {
 /// - Table redefinition/overwrite detection  
 /// - Dotted key vs table conflict detection
 ///
-/// Some files are TOML 1.1 features that were invalid in TOML 1.0
+/// Others are parser bugs, commented inline.
 const SKIP_INVALID: &[&str] = &[
     "array/extend-defined-aot.toml",
     "array/extending-table.toml",
@@ -58,13 +58,7 @@ const SKIP_INVALID: &[&str] = &[
     "inline-table/overwrite-08.toml",
     "inline-table/overwrite-09.toml",
     "inline-table/overwrite-10.toml",
-    // TOML 1.1.0 allows these features that were invalid in 1.0
-    "inline-table/empty-03.toml", // Empty inline tables with newlines
-    "inline-table/linebreak-01.toml", // Newlines in inline tables
-    "inline-table/linebreak-02.toml", // Newlines in inline tables
-    "inline-table/linebreak-03.toml", // Newlines in inline tables
-    "inline-table/linebreak-04.toml", // Newlines in inline tables
-    "inline-table/trailing-comma.toml", // Trailing commas in inline tables
+    "inline-table/empty-03.toml", // Lone comma in inline table
     "key/dotted-redefine-table-01.toml",
     "key/dotted-redefine-table-02.toml",
     "key/duplicate-keys-01.toml",
@@ -76,10 +70,6 @@ const SKIP_INVALID: &[&str] = &[
     "key/duplicate-keys-07.toml",
     "key/duplicate-keys-08.toml",
     "key/duplicate-keys-09.toml",
-    "spec-1.0.0/inline-table-2-0.toml",
-    "spec-1.0.0/inline-table-3-0.toml",
-    "spec-1.0.0/table-9-0.toml",
-    "spec-1.0.0/table-9-1.toml",
     "spec-1.1.0/common-46-0.toml",
     "spec-1.1.0/common-46-1.toml",
     "spec-1.1.0/common-49-0.toml",
@@ -116,36 +106,28 @@ const SKIP_INVALID: &[&str] = &[
     "table/super-twice.toml",
 ];
 
+/// Valid files that the parser rejects
+const SKIP_VALID_PARSE: &[&str] = &[
+    "key/numeric-04.toml", // `01.23` as dotted keys
+];
+
 fn should_skip(path: &Path, skip_list: &[&str]) -> bool {
     let path_str = path.to_string_lossy();
     skip_list.iter().any(|skip| path_str.ends_with(skip))
-}
-
-fn toml_files(dir: &str) -> impl Iterator<Item = walkdir::DirEntry> {
-    let path = Path::new(TOML_TEST_DIR).join(dir);
-    assert!(
-        path.exists(),
-        "toml-test directory not found at {}. Please run: git submodule update --init",
-        path.display()
-    );
-    WalkDir::new(path)
-        .into_iter()
-        .filter_map(Result::ok)
-        .filter(|e| e.path().extension().is_some_and(|ext| ext == "toml"))
 }
 
 #[test]
 fn test_valid_idempotent() {
     let mut idempotent_failures = Vec::new();
     let mut semantic_failures = Vec::new();
+    let mut parse_failures = Vec::new();
     let mut panics = Vec::new();
 
-    for entry in toml_files("valid") {
-        let path = entry.path();
-
+    for path in &toml_files("valid") {
         let source = fs::read_to_string(path).unwrap();
 
         let result = std::panic::catch_unwind(|| {
+            let parse_ok = should_skip(path, SKIP_VALID_PARSE) || parse(&source).errors.is_empty();
             let first = format(&source, Options::default());
             let second = format(&first, Options::default());
 
@@ -171,19 +153,25 @@ fn test_valid_idempotent() {
                 }
             };
 
-            (is_idempotent, is_semantically_equivalent)
+            (parse_ok, is_idempotent, is_semantically_equivalent)
         });
 
+        if let Ok((false, ..)) = result {
+            parse_failures.push(path.to_path_buf());
+        }
         match result {
-            Ok((true, true)) => {} // Success - both tests passed
-            Ok((false, _)) => idempotent_failures.push(path.to_path_buf()),
-            Ok((true, false)) => semantic_failures.push(path.to_path_buf()),
+            Ok((_, true, true)) => {} // Success - both tests passed
+            Ok((_, false, _)) => idempotent_failures.push(path.to_path_buf()),
+            Ok((_, true, false)) => semantic_failures.push(path.to_path_buf()),
             Err(_) => panics.push(path.to_path_buf()),
         }
     }
 
     if !panics.is_empty() {
         eprintln!("Formatter panicked on {} files:\n{panics:#?}", panics.len());
+    }
+    if !parse_failures.is_empty() {
+        eprintln!("Parser rejected {} valid files:\n{parse_failures:#?}", parse_failures.len());
     }
     if !idempotent_failures.is_empty() {
         eprintln!(
@@ -197,15 +185,19 @@ fn test_valid_idempotent() {
             semantic_failures.len()
         );
     }
-    assert!(panics.is_empty() && idempotent_failures.is_empty() && semantic_failures.is_empty());
+    assert!(
+        panics.is_empty()
+            && parse_failures.is_empty()
+            && idempotent_failures.is_empty()
+            && semantic_failures.is_empty()
+    );
 }
 
 #[test]
 fn test_invalid_parse_failure() {
     let mut failures = Vec::new();
 
-    for entry in toml_files("invalid") {
-        let path = entry.path();
+    for path in &toml_files("invalid") {
         if should_skip(path, SKIP_INVALID) {
             continue;
         }

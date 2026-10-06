@@ -2,23 +2,16 @@ use std::fs;
 use std::path::Path;
 
 use oxc_toml::{Options, format};
-use walkdir::WalkDir;
 
-const TOML_TEST_DIR: &str = "toml-test/tests";
+mod common;
+use common::{TOML_TEST_DIR, toml_files};
 
 #[test]
 fn snapshot() {
     let valid_dir = Path::new(TOML_TEST_DIR).join("valid");
 
-    assert!(valid_dir.exists(), "toml-test directory not found. Run: git submodule update --init");
-
-    // Collect all valid .toml files
-    let mut files: Vec<_> = WalkDir::new(&valid_dir)
-        .into_iter()
-        .filter_map(Result::ok)
-        .filter(|e| e.path().extension().is_some_and(|ext| ext == "toml"))
-        .map(|e| e.path().to_path_buf())
-        .collect();
+    // Collect all valid .toml files for TOML 1.1.0
+    let mut files = toml_files("valid");
 
     // Sort by path for consistent ordering
     files.sort();
