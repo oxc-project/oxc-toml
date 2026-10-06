@@ -127,9 +127,10 @@ fn test_valid_idempotent() {
         let source = fs::read_to_string(path).unwrap();
 
         let result = std::panic::catch_unwind(|| {
-            let parse_ok = should_skip(path, SKIP_VALID_PARSE) || parse(&source).errors.is_empty();
-            let first = format(&source, Options::default());
-            let second = format(&first, Options::default());
+            let parsed = parse(&source);
+            let parse_ok = should_skip(path, SKIP_VALID_PARSE) || parsed.errors.is_empty();
+            let first = format(&parsed, Options::default());
+            let second = format(&parse(&first), Options::default());
 
             // Test 1: Idempotency
             let is_idempotent = first == second;

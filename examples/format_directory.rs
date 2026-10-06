@@ -13,7 +13,7 @@ use std::fs;
 use std::path::Path;
 
 use ignore::WalkBuilder;
-use oxc_toml::{Options, format};
+use oxc_toml::{Options, format, parse};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -71,7 +71,13 @@ fn main() {
 
         match fs::read_to_string(file_path) {
             Ok(source) => {
-                let formatted = format(&source, Options::default());
+                let parsed = parse(&source);
+                if !parsed.errors.is_empty() {
+                    eprintln!("Error parsing {}: {:?}", file_path.display(), parsed.errors);
+                    error_count += 1;
+                    continue;
+                }
+                let formatted = format(&parsed, Options::default());
 
                 // Write back to file
                 match fs::write(file_path, formatted) {

@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::Path;
 
-use oxc_toml::{Options, format};
+use oxc_toml::{Options, format, parse};
 
 mod common;
 use common::{TOML_TEST_DIR, toml_files};
@@ -26,7 +26,7 @@ fn snapshot() {
         let original = fs::read_to_string(path)
             .unwrap_or_else(|e| panic!("Failed to read {}: {}", path.display(), e));
 
-        let formatted = format(&original, Options::default());
+        let formatted = format(&parse(&original), Options::default());
 
         // Format entry with clear comparison
         snapshot.push_str(&format!("## {relative_path}\n\n"));

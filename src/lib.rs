@@ -8,4 +8,4 @@ mod tree;
 mod util;
 
 pub use formatter::{Options, format};
-pub use parser::parse;
+pub use parser::{Error, Parse, parse};
