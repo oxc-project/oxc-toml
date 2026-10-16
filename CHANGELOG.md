@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- *(formatter)* keep one entry per line in inline tables with comments ([#146](https://github.com/oxc-project/oxc-toml/pull/146))
+- _(formatter)_ keep one entry per line in inline tables with comments ([#146](https://github.com/oxc-project/oxc-toml/pull/146))
 
 ## [0.15.0](https://github.com/oxc-project/oxc-toml/compare/v0.14.6...v0.15.0) - 2026-10-06
 
