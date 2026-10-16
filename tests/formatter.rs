@@ -59,3 +59,13 @@ fn test_bare_key_starting_with_digit() {
 fn test_unknown_escape_with_multibyte_char() {
     assert!(!parse("a = \"\\é\"\n").errors.is_empty());
 }
+
+#[test]
+fn test_inline_table_with_comment() {
+    let format = |source: &str| format(&parse(source), Options::default());
+
+    // A comment would swallow the rest of a joined line, so one entry per line
+    assert_eq!(format("t = { a = 1 # c\n, b = 2 }\n"), "t = {\n  a = 1, # c\n  b = 2\n}\n");
+    // A nested array keeps its comment itself, the table stays valid TOML 1.0
+    assert_eq!(format("a = { b = [ 1, # c\n 2 ] }\n"), "a = { b = [\n  1, # c\n  2,\n] }\n");
+}

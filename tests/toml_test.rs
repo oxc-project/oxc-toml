@@ -146,12 +146,10 @@ fn test_valid_idempotent() {
                     // that treats NaN == NaN
                     values_equal(orig, fmt)
                 }
-                _ => {
-                    // If either fails to parse with the toml crate, skip semantic check
-                    // This can happen for valid TOML that the toml crate doesn't support,
-                    // or if our formatter has bugs that produce invalid TOML
-                    true // Don't fail the test, just skip the semantic check
-                }
+                // The formatter broke valid TOML
+                (Ok(_), Err(_)) => false,
+                // Valid TOML that the toml crate doesn't support, skip the semantic check
+                (Err(_), _) => true,
             };
 
             (parse_ok, is_idempotent, is_semantically_equivalent)

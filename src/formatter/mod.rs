@@ -690,6 +690,14 @@ fn format_inline_table(
     }
     let context = &context;
 
+    // A comment runs to the end of the line, so joining the lines would comment out the rest.
+    // Keep one entry per line instead (TOML 1.1).
+    // Only the table's own comments count, a nested array or table keeps its comments itself.
+    if has_own_comment(node) {
+        format_inline_table_multiline(node, source, options, context, formatted);
+        return None;
+    }
+
     // Check if the inline table has any ENTRY nodes (not just tokens like braces)
     let has_entries = node.children().iter().any(|c| c.kind() == ENTRY);
 
@@ -707,15 +715,11 @@ fn format_inline_table(
     };
 
     let mut node_index = 0;
-    let mut last_was_comment = false;
     for c in node.children_with_tokens() {
         match c {
             Element::Node(n) => {
                 if node_index != 0 {
                     *formatted += ", ";
-                } else if last_was_comment {
-                    // Need space after inline comment before first entry
-                    *formatted += " ";
                 }
 
                 let sorted_child;
@@ -730,15 +734,9 @@ fn format_inline_table(
                     format_entry(n, source, options, context)
                 };
 
-                // In TOML 1.1, inline tables can have comments
                 entry.write_to(formatted, options);
-                if let Some(ref c) = entry.comment {
-                    *formatted += " ";
-                    *formatted += c;
-                }
 
                 node_index += 1;
-                last_was_comment = false;
             }
             Element::Token(t) => match t.kind() {
                 BRACE_START => {
@@ -753,19 +751,8 @@ fn format_inline_table(
                     }
                     *formatted += "}";
                 }
-                WHITESPACE | COMMA | NEWLINE => {
-                    // Skip whitespace, commas, and newlines
-                    // TOML 1.1 allows newlines in inline tables, but we collapse to single-line for consistency
-                }
-                COMMENT => {
-                    // TOML 1.1 allows comments in inline tables
-                    // Preserve comments inline
-                    if !formatted.ends_with(' ') && !formatted.ends_with('{') {
-                        *formatted += " ";
-                    }
-                    *formatted += t.text(source);
-                    last_was_comment = true;
-                }
+                // Without comments, the table can be joined onto one line
+                WHITESPACE | COMMA | NEWLINE => {}
                 _ => *formatted += t.text(source),
             },
         }
@@ -773,6 +760,75 @@ fn format_inline_table(
 
     None
 }
+
+/// Whether the inline table has a comment of its own,
+/// directly in it or behind an entry's value.
+fn has_own_comment(node: &SyntaxNode) -> bool {
+    let has_comment_token = |n: &SyntaxNode| n.children().iter().any(|c| c.kind() == COMMENT);
+    has_comment_token(node)
+        || node.children().iter().filter_map(Element::as_node).any(|entry| {
+            has_comment_token(entry)
+                || entry.children().iter().filter_map(Element::as_node).any(has_comment_token)
+        })
+}
+
+/// An inline table with comments, one entry or own-line comment per line.
+/// Entries are not reordered, a comment belongs to the line it is on.
+fn format_inline_table_multiline(
+    node: &SyntaxNode,
+    source: &str,
+    options: &Options,
+    context: &Context,
+    formatted: &mut String,
+) {
+    let mut inner_context = context.clone();
+    inner_context.indent_level += 1;
+    let indent: String = inner_context.indent(options).collect();
+    let entry_count = node.children().iter().filter(|c| c.kind() == ENTRY).count();
+
+    let mut entry_index = 0;
+    // Whether a line break was seen since the last entry, so a comment is on its own line
+    let mut on_new_line = false;
+    for c in node.children_with_tokens() {
+        match c {
+            Element::Node(n) => {
+                *formatted += options.newline();
+                *formatted += &indent;
+                let entry = format_entry(n, source, options, &inner_context);
+                entry.write_to(formatted, options);
+                entry_index += 1;
+                if entry_index < entry_count {
+                    *formatted += ",";
+                }
+                if let Some(ref c) = entry.comment {
+                    *formatted += " ";
+                    *formatted += c;
+                }
+                on_new_line = false;
+            }
+            Element::Token(t) => match t.kind() {
+                BRACE_START => *formatted += "{",
+                BRACE_END => {
+                    *formatted += options.newline();
+                    formatted.extend(context.indent(options));
+                    *formatted += "}";
+                }
+                NEWLINE => on_new_line = true,
+                COMMENT => {
+                    if on_new_line {
+                        *formatted += options.newline();
+                        *formatted += &indent;
+                    } else {
+                        *formatted += " ";
+                    }
+                    *formatted += t.text(source);
+                }
+                _ => {}
+            },
+        }
+    }
+}
+
 // Check whether the array spans multiple lines in its current form.
 fn is_array_multiline(node: &SyntaxNode) -> bool {
     node.descendants_with_tokens().any(|n| n.kind() == NEWLINE)
