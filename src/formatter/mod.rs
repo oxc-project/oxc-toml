@@ -70,6 +70,8 @@ pub struct Options {
     /// where possible.
     pub inline_table_expand: bool,
 
+    pub inline_table_auto_expand: bool,
+
     /// Automatically collapse arrays if they
     /// fit in one line.
     ///
@@ -137,6 +139,7 @@ impl Default for Options {
             indent_tables: false,
             indent_entries: false,
             inline_table_expand: true,
+            inline_table_auto_expand: false,
             trailing_newline: true,
             allowed_blank_lines: 2,
             indent_string: "  ".into(),
@@ -452,60 +455,33 @@ fn add_entries(
 
     // We check for too long lines, and try to expand them if possible.
     // We don't take vertical alignment into account for simplicity.
-    if options.array_auto_expand {
+    if options.array_auto_expand || options.inline_table_auto_expand {
         for entry in entry_group.iter_mut() {
-            let comment_chars_count = entry
-                .comment
-                .as_ref()
-                .map(
-                    |c| c.chars().count() + 1, // account for the separator ' ' as well
-                )
-                .unwrap_or(0);
+            let prefix = indent_chars_count + entry_prefix_chars(&entry.key, options);
+            if exceeds_width(prefix, &entry.value, comment_chars(entry.comment.as_deref()), options)
+            {
+                let mut context = context.clone();
+                context.force_multiline = true;
 
-            let line_count = entry.value.split('\n').count();
+                // too long, reformat the value of the entry
+                entry.value.clear();
+                let comment = format_value(
+                    entry
+                        .syntax
+                        .children()
+                        .iter()
+                        .find(|n| n.kind() == VALUE)
+                        .and_then(|e| e.as_node())
+                        .unwrap(),
+                    source,
+                    options,
+                    &context,
+                    &mut entry.value,
+                );
 
-            // check each line of the value
-            // for the first line we include the actual indent, key, and the eq parts as well
-            for (idx, line) in entry.value.split('\n').enumerate() {
-                let mut chars_count = line.chars().count();
-                if idx == 0 {
-                    chars_count += indent_chars_count;
-                    chars_count += entry.key.chars().count();
-                    chars_count += if options.compact_entries { 1 } else { 3 }; // " = "
-                }
-
-                // Include comment in the last line.
-                if idx == line_count - 1 {
-                    chars_count += comment_chars_count;
-                }
-
-                if chars_count > options.column_width {
-                    let mut context = context.clone();
-                    context.force_multiline = true;
-
-                    // too long, reformat the value of the entry
-                    entry.value.clear();
-                    let comment = format_value(
-                        entry
-                            .syntax
-                            .children()
-                            .iter()
-                            .find(|n| n.kind() == VALUE)
-                            .and_then(|e| e.as_node())
-                            .unwrap(),
-                        source,
-                        options,
-                        &context,
-                        &mut entry.value,
-                    );
-
-                    if let Some(c) = comment {
-                        debug_assert!(
-                            entry.comment.is_none() || entry.comment.as_ref().unwrap() == &c
-                        );
-                        entry.comment = Some(c);
-                    }
-                    break;
+                if let Some(c) = comment {
+                    debug_assert!(entry.comment.is_none() || entry.comment.as_ref().unwrap() == &c);
+                    entry.comment = Some(c);
                 }
             }
         }
@@ -684,9 +660,10 @@ fn format_inline_table(
     context: &Context,
     formatted: &mut String,
 ) -> Option<String> {
+    let forced = options.inline_table_auto_expand && context.force_multiline;
     let mut context = context.clone();
     if context.force_multiline {
-        context.force_multiline = options.inline_table_expand;
+        context.force_multiline = options.inline_table_expand && !options.inline_table_auto_expand;
     }
     let context = &context;
 
@@ -694,7 +671,7 @@ fn format_inline_table(
     // Keep one entry per line instead (TOML 1.1).
     // Only the table's own comments count, a nested array or table keeps its comments itself.
     if has_own_comment(node) {
-        format_inline_table_multiline(node, source, options, context, formatted);
+        format_inline_table_multiline(node, source, options, context, formatted, false);
         return None;
     }
 
@@ -703,6 +680,18 @@ fn format_inline_table(
 
     if !has_entries {
         *formatted += "{}";
+        return None;
+    }
+
+    if forced {
+        format_inline_table_multiline(
+            node,
+            source,
+            options,
+            context,
+            formatted,
+            options.reorder_inline_tables,
+        );
         return None;
     }
 
@@ -780,24 +769,55 @@ fn format_inline_table_multiline(
     options: &Options,
     context: &Context,
     formatted: &mut String,
+    reorder: bool,
 ) {
     let mut inner_context = context.clone();
     inner_context.indent_level += 1;
     let indent: String = inner_context.indent(options).collect();
     let entry_count = node.children().iter().filter(|c| c.kind() == ENTRY).count();
+    let mut sorted = reorder.then(|| {
+        let mut entries: Vec<_> = node.children().iter().filter_map(Element::as_node).collect();
+        entries.sort_by_cached_key(|n| n.text(source));
+        entries.into_iter()
+    });
+    let recheck = options.inline_table_auto_expand && options.inline_table_expand;
 
     let mut entry_index = 0;
     // Whether a line break was seen since the last entry, so a comment is on its own line
     let mut on_new_line = false;
-    for c in node.children_with_tokens() {
+    for (elem_idx, c) in node.children_with_tokens().enumerate() {
         match c {
             Element::Node(n) => {
                 *formatted += options.newline();
                 *formatted += &indent;
+                let n = sorted.as_mut().and_then(Iterator::next).unwrap_or(n);
+                let has_comma = entry_index + 1 < entry_count;
                 let entry = format_entry(n, source, options, &inner_context);
+                let entry = if recheck
+                    && exceeds_width(
+                        indent.chars().count() + entry_prefix_chars(&entry.key, options),
+                        &entry.value,
+                        usize::from(has_comma)
+                            + comment_chars(
+                                entry
+                                    .comment
+                                    .as_deref()
+                                    .or_else(|| trailing_comment(node, elem_idx, source)),
+                            ),
+                        options,
+                    ) {
+                    format_entry(
+                        n,
+                        source,
+                        options,
+                        &Context { force_multiline: true, ..inner_context.clone() },
+                    )
+                } else {
+                    entry
+                };
                 entry.write_to(formatted, options);
                 entry_index += 1;
-                if entry_index < entry_count {
+                if has_comma {
                     *formatted += ",";
                 }
                 if let Some(ref c) = entry.comment {
@@ -829,6 +849,32 @@ fn format_inline_table_multiline(
     }
 }
 
+fn exceeds_width(prefix: usize, value: &str, suffix: usize, options: &Options) -> bool {
+    let last = value.split('\n').count() - 1;
+    value.split('\n').enumerate().any(|(idx, line)| {
+        line.chars().count()
+            + if idx == 0 { prefix } else { 0 }
+            + if idx == last { suffix } else { 0 }
+            > options.column_width
+    })
+}
+
+fn entry_prefix_chars(key: &str, options: &Options) -> usize {
+    key.chars().count() + if options.compact_entries { 1 } else { 3 }
+}
+
+fn comment_chars(comment: Option<&str>) -> usize {
+    comment.map_or(0, |c| c.chars().count() + 1)
+}
+
+fn trailing_comment<'s>(node: &SyntaxNode, elem_idx: usize, source: &'s str) -> Option<&'s str> {
+    node.children()[elem_idx + 1..]
+        .iter()
+        .take_while(|e| e.as_node().is_none() && e.kind() != NEWLINE)
+        .find(|e| e.kind() == COMMENT)
+        .map(|e| e.text(source))
+}
+
 // Check whether the array spans multiple lines in its current form.
 fn is_array_multiline(node: &SyntaxNode) -> bool {
     node.descendants_with_tokens().any(|n| n.kind() == NEWLINE)
@@ -845,10 +891,12 @@ fn format_array(
     context: &Context,
     formatted: &mut String,
 ) -> Option<String> {
-    let mut multiline = is_array_multiline(node) || context.force_multiline;
+    let forced =
+        context.force_multiline && (options.array_auto_expand || !options.inline_table_auto_expand);
+    let mut multiline = is_array_multiline(node) || forced;
 
     // We always try to collapse it if possible.
-    if can_collapse_array(node) && options.array_auto_collapse && !context.force_multiline {
+    if can_collapse_array(node) && options.array_auto_collapse && !forced {
         multiline = false;
     }
 
@@ -857,10 +905,10 @@ fn format_array(
 
     // Formatted value, optional trailing comment
     // The value must not include the comma at the end.
-    let mut value_group: Vec<(String, Option<String>)> = Vec::new();
+    let mut value_group: Vec<(String, Option<String>, &SyntaxNode)> = Vec::new();
     let mut commas_group: Vec<bool> = Vec::new();
 
-    let add_values = |value_group: &mut Vec<(String, Option<String>)>,
+    let add_values = |value_group: &mut Vec<(String, Option<String>, &SyntaxNode)>,
                       commas_group: &mut Vec<bool>,
                       formatted: &mut String,
                       context: &Context|
@@ -871,14 +919,33 @@ fn format_array(
             value_group.sort_unstable_by(|x, y| x.0.cmp(&y.0));
         }
 
+        let indent_chars = context.indent_level * options.indent_string.chars().count();
         for (has_comma, p) in commas_group.drain(0..).zip(value_group.iter_mut()) {
+            if multiline
+                && options.inline_table_auto_expand
+                && exceeds_width(
+                    indent_chars,
+                    &p.0,
+                    usize::from(has_comma) + comment_chars(p.1.as_deref()),
+                    options,
+                )
+            {
+                p.0.clear();
+                format_value(
+                    p.2,
+                    source,
+                    options,
+                    &Context { force_multiline: true, ..context.clone() },
+                    &mut p.0,
+                );
+            }
             if has_comma {
                 p.0 += ","
             };
         }
 
         if !multiline {
-            for (idx, (val, comment)) in value_group.drain(0..).enumerate() {
+            for (idx, (val, comment, _)) in value_group.drain(0..).enumerate() {
                 debug_assert!(comment.is_none());
                 if idx != 0 {
                     *formatted += " "
@@ -894,7 +961,7 @@ fn format_array(
         if !options.align_comments {
             let indent_str: String = context.indent(options).collect();
             let newline = options.newline();
-            for (i, (value, comment)) in value_group.drain(0..).enumerate() {
+            for (i, (value, comment, _)) in value_group.drain(0..).enumerate() {
                 if i != 0 {
                     *formatted += newline;
                 }
@@ -911,7 +978,7 @@ fn format_array(
         let mut comment_count = 0;
         let rows = value_group
             .drain(0..)
-            .map(|(value, comment)| {
+            .map(|(value, comment, _)| {
                 let mut row = Vec::with_capacity(5);
 
                 row.push(context.indent(options).collect::<String>());
@@ -946,6 +1013,9 @@ fn format_array(
     if multiline {
         inner_context.indent_level += 1;
     }
+    if options.inline_table_auto_expand {
+        inner_context.force_multiline = false;
+    }
 
     let mut dangling_newline_count = 0;
 
@@ -965,7 +1035,7 @@ fn format_array(
                         node_index < node_count - 1 || (multiline && options.array_trailing_comma);
                     commas_group.push(has_comma);
 
-                    value_group.push((val_string, comment));
+                    value_group.push((val_string, comment, n));
                     skip_newlines += 1;
 
                     node_index += 1;
