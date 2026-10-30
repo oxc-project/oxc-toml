@@ -12,12 +12,12 @@ oxc's TOML formatter (`oxc_formatter_toml`) calls `parse()` and then `format()`.
 
 ## Testing
 
-| Command | Covers |
-| --- | --- |
-| `cargo test` | unit tests (`tests/formatter.rs`), `toml-test` (`tests/toml_test.rs`), formatted output snapshot (`tests/snapshot.rs`) |
-| `cargo insta review` | accept snapshot changes after an intentional formatting change |
-| `just ready` | the CI checks; needs a clean working tree (it starts with `git diff --exit-code`) |
-| `cargo run --example format_directory [PATH]` | format every TOML file under a directory, respecting `.gitignore` |
+| Command                                       | Covers                                                                                                                 |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `cargo test`                                  | unit tests (`tests/formatter.rs`), `toml-test` (`tests/toml_test.rs`), formatted output snapshot (`tests/snapshot.rs`) |
+| `cargo insta review`                          | accept snapshot changes after an intentional formatting change                                                         |
+| `just ready`                                  | the CI checks; needs a clean working tree (it starts with `git diff --exit-code`)                                      |
+| `cargo run --example format_directory [PATH]` | format every TOML file under a directory, respecting `.gitignore`                                                      |
 
 First run: `just clone-test-data` for `toml-test`, which `cargo test` needs (`just init` also installs the dev tools).
 
