@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.2](https://github.com/oxc-project/oxc-toml/compare/v0.15.1...v0.15.2) - 2026-11-01
+
+### Other
+
+- *(deps)* update rust crate ignore to v0.4.34 ([#152](https://github.com/oxc-project/oxc-toml/pull/152))
+- consolidate docs into AGENTS.md ([#150](https://github.com/oxc-project/oxc-toml/pull/150))
+
 ## [0.15.1](https://github.com/oxc-project/oxc-toml/compare/v0.15.0...v0.15.1) - 2026-10-16
 
 ### Fixed
