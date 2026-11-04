@@ -118,6 +118,19 @@ fn should_skip(path: &Path, skip_list: &[&str]) -> bool {
 
 #[test]
 fn test_valid_idempotent() {
+    check_valid_idempotent(&Options::default());
+}
+
+#[test]
+fn test_valid_idempotent_inline_table_auto_expand() {
+    check_valid_idempotent(&Options {
+        inline_table_auto_expand: true,
+        column_width: 40,
+        ..Options::default()
+    });
+}
+
+fn check_valid_idempotent(options: &Options) {
     let mut idempotent_failures = Vec::new();
     let mut semantic_failures = Vec::new();
     let mut parse_failures = Vec::new();
@@ -129,8 +142,8 @@ fn test_valid_idempotent() {
         let result = std::panic::catch_unwind(|| {
             let parsed = parse(&source);
             let parse_ok = should_skip(path, SKIP_VALID_PARSE) || parsed.errors.is_empty();
-            let first = format(&parsed, Options::default());
-            let second = format(&parse(&first), Options::default());
+            let first = format(&parsed, options.clone());
+            let second = format(&parse(&first), options.clone());
 
             // Test 1: Idempotency
             let is_idempotent = first == second;
