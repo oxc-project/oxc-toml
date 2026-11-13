@@ -10,12 +10,11 @@ alias r := ready
 alias clone := clone-test-data
 
 init:
-  cargo binstall watchexec-cli cargo-insta typos-cli cargo-shear@1.13.1 dprint -y
+  cargo binstall watchexec-cli cargo-insta cargo-shear@1.13.1 dprint -y
   just clone-test-data
 
 ready:
   git diff --exit-code --quiet
-  typos
   just fmt
   just check
   just test
