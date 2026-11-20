@@ -34,6 +34,11 @@ use Escape::*;
 
 impl<'source> LexerToken<'source> for Escape {
     fn lex(input: &'source str) -> Option<(Self, usize)> {
+        // Most of a string is not escaped: take it up to the next backslash at once
+        if !input.starts_with('\\') {
+            let len = input.find('\\').unwrap_or(input.len());
+            return (len != 0).then_some((UnEscaped, len));
+        }
         if input.starts_with("\\b") {
             return Some((Backspace, 2));
         }
@@ -100,8 +105,8 @@ impl<'source> LexerToken<'source> for Escape {
             return Some((Unknown, input.ceil_char_boundary(2)));
         }
 
-        // Unescaped character - consume one UTF-8 character
-        if input.is_empty() { None } else { Some((UnEscaped, input.ceil_char_boundary(1))) }
+        // A lone trailing backslash
+        Some((UnEscaped, 1))
     }
 }
 
