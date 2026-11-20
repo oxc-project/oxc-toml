@@ -69,3 +69,16 @@ fn test_inline_table_with_comment() {
     // A nested array keeps its comment itself, the table stays valid TOML 1.0
     assert_eq!(format("a = { b = [ 1, # c\n 2 ] }\n"), "a = { b = [\n  1, # c\n  2,\n] }\n");
 }
+
+#[test]
+fn test_array_table_header_whitespace() {
+    // Whitespace may surround the key, but not split `[[` / `]]`
+    for (input, expected) in [("[[ a ]]\n", "[[a]]\n"), ("[[\ta.b\t]]\n", "[[a.b]]\n")] {
+        let parsed = parse(input);
+        assert!(parsed.errors.is_empty(), "input: {input:?}");
+        assert_eq!(format(&parsed, Options::default()), expected, "input: {input:?}");
+    }
+    for input in ["[ [a]]\n", "[[a] ]\n"] {
+        assert!(!parse(input).errors.is_empty(), "input: {input:?}");
+    }
+}
