@@ -349,10 +349,11 @@ impl<'p> Parser<'p> {
     }
 
     fn parse_table_array_header(&mut self) -> ParserResult<()> {
+        // The brackets of `[[` must be adjacent, but whitespace may follow them
         self.skip_whitespace = false;
         self.must_token_or(BRACKET_START, r#"expected "[[""#)?;
-        self.must_token_or(BRACKET_START, r#"expected "[[""#)?;
         self.skip_whitespace = true;
+        self.must_token_or(BRACKET_START, r#"expected "[[""#)?;
         let _ = with_node!(self.builder, KEY, self.parse_key());
         self.skip_whitespace = false;
         let _ = self.must_token_or(BRACKET_END, r#"expected "]]""#);
