@@ -9,3 +9,5 @@ mod util;
 
 pub use formatter::{Options, format};
 pub use parser::{Error, Parse, parse};
+pub use syntax::{SyntaxElement, SyntaxKind, SyntaxNode, SyntaxToken};
+pub use tree::TextRange;
