@@ -11,18 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- *(parser)* expose the syntax tree ([#156](https://github.com/oxc-project/oxc-toml/pull/156))
+- _(parser)_ expose the syntax tree ([#156](https://github.com/oxc-project/oxc-toml/pull/156))
 
 ### Fixed
 
-- *(parser)* keep trivia after scalar value out of its node ([#158](https://github.com/oxc-project/oxc-toml/pull/158))
-- *(parser)* allow whitespace after `[[` in array table header ([#157](https://github.com/oxc-project/oxc-toml/pull/157))
+- _(parser)_ keep trivia after scalar value out of its node ([#158](https://github.com/oxc-project/oxc-toml/pull/158))
+- _(parser)_ allow whitespace after `[[` in array table header ([#157](https://github.com/oxc-project/oxc-toml/pull/157))
 
 ### Other
 
-- *(parser)* skip unescaped runs at once ([#159](https://github.com/oxc-project/oxc-toml/pull/159))
-- *(deps)* update rust crate toml to v1.2.1 ([#153](https://github.com/oxc-project/oxc-toml/pull/153))
-- *(deps)* update rust crate ignore to v0.4.34 ([#152](https://github.com/oxc-project/oxc-toml/pull/152))
+- _(parser)_ skip unescaped runs at once ([#159](https://github.com/oxc-project/oxc-toml/pull/159))
+- _(deps)_ update rust crate toml to v1.2.1 ([#153](https://github.com/oxc-project/oxc-toml/pull/153))
+- _(deps)_ update rust crate ignore to v0.4.34 ([#152](https://github.com/oxc-project/oxc-toml/pull/152))
 - consolidate docs into AGENTS.md ([#150](https://github.com/oxc-project/oxc-toml/pull/150))
 
 ## [0.15.1](https://github.com/oxc-project/oxc-toml/compare/v0.15.0...v0.15.1) - 2026-10-16
