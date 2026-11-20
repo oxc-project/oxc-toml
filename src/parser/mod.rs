@@ -519,7 +519,7 @@ impl<'p> Parser<'p> {
         };
 
         match t {
-            BOOL | DATE_TIME_OFFSET | DATE_TIME_LOCAL | DATE | TIME => self.token(),
+            BOOL | DATE_TIME_OFFSET | DATE_TIME_LOCAL | DATE | TIME => self.add_token(),
             INTEGER => {
                 // Check for zero-padded integers
                 if (self.lexer.slice().starts_with('0') && self.lexer.slice() != "0")
@@ -530,28 +530,28 @@ impl<'p> Parser<'p> {
                 } else if !check_underscores(self.lexer.slice(), 10) {
                     self.error("invalid underscores")
                 } else {
-                    self.token()
+                    self.add_token()
                 }
             }
             INTEGER_BIN => {
                 if !check_underscores(self.lexer.slice(), 2) {
                     self.error("invalid underscores")
                 } else {
-                    self.token()
+                    self.add_token()
                 }
             }
             INTEGER_HEX => {
                 if !check_underscores(self.lexer.slice(), 16) {
                     self.error("invalid underscores")
                 } else {
-                    self.token()
+                    self.add_token()
                 }
             }
             INTEGER_OCT => {
                 if !check_underscores(self.lexer.slice(), 8) {
                     self.error("invalid underscores")
                 } else {
-                    self.token()
+                    self.add_token()
                 }
             }
             FLOAT => {
@@ -569,7 +569,7 @@ impl<'p> Parser<'p> {
                 } else if !check_underscores(self.lexer.slice(), 10) {
                     self.error("invalid underscores")
                 } else {
-                    self.token()
+                    self.add_token()
                 }
             }
             STRING_LITERAL => {
@@ -587,7 +587,7 @@ impl<'p> Parser<'p> {
                         }
                     }
                 };
-                self.token()
+                self.add_token()
             }
             MULTI_LINE_STRING_LITERAL => {
                 match allowed_chars::multi_line_string_literal(self.lexer.slice()) {
@@ -604,7 +604,7 @@ impl<'p> Parser<'p> {
                         }
                     }
                 };
-                self.token()
+                self.add_token()
             }
             STRING => {
                 match allowed_chars::string(self.lexer.slice()) {
@@ -623,7 +623,7 @@ impl<'p> Parser<'p> {
                 };
 
                 match check_escape(self.lexer.slice()) {
-                    Ok(_) => self.token(),
+                    Ok(_) => self.add_token(),
                     Err(err_indices) => {
                         for e in err_indices {
                             self.add_error(&Error {
@@ -638,7 +638,7 @@ impl<'p> Parser<'p> {
                         // We proceed normally even if
                         // the string contains invalid escapes.
                         // It shouldn't affect the rest of the parsing.
-                        self.token()
+                        self.add_token()
                     }
                 }
             }
@@ -659,7 +659,7 @@ impl<'p> Parser<'p> {
                 };
 
                 match check_escape(self.lexer.slice()) {
-                    Ok(_) => self.token(),
+                    Ok(_) => self.add_token(),
                     Err(err_indices) => {
                         for e in err_indices {
                             self.add_error(&Error {
@@ -674,7 +674,7 @@ impl<'p> Parser<'p> {
                         // We proceed normally even if
                         // the string contains invalid escapes.
                         // It shouldn't affect the rest of the parsing.
-                        self.token()
+                        self.add_token()
                     }
                 }
             }
