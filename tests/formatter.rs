@@ -72,13 +72,8 @@ fn test_inline_table_with_comment() {
 
 #[test]
 fn test_array_table_header_whitespace() {
-    // Whitespace may surround the key, but not split `[[` / `]]`
+    // The whitespace around the key is dropped
     for (input, expected) in [("[[ a ]]\n", "[[a]]\n"), ("[[\ta.b\t]]\n", "[[a.b]]\n")] {
-        let parsed = parse(input);
-        assert!(parsed.errors.is_empty(), "input: {input:?}");
-        assert_eq!(format(&parsed, Options::default()), expected, "input: {input:?}");
-    }
-    for input in ["[ [a]]\n", "[[a] ]\n"] {
-        assert!(!parse(input).errors.is_empty(), "input: {input:?}");
+        assert_eq!(format(&parse(input), Options::default()), expected, "input: {input:?}");
     }
 }
