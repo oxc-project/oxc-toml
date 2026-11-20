@@ -841,7 +841,7 @@ fn is_digit_byte(b: u8, radix: u32) -> bool {
 /// the errors that occurred during parsing.
 #[derive(Debug, Clone)]
 pub struct Parse<'a> {
-    pub(crate) root: Node,
-    pub(crate) source: &'a str,
+    pub root: Node,
+    pub source: &'a str,
     pub errors: Vec<Error>,
 }
